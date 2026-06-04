@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>망각전야 (Morimens) 팬 페이지</title>
+    <style>
+        /* 기본 스타일 초기화 및 배경색 설정 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #192326;
+            color: #e3e8e9;
+            font-family: 'Noto Sans KR', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* 1. 초기 화면 (망각전야 홈페이지 1) */
+        .hero-section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            /* 실제 적용 시 '망각전야 홈페이지 1.jpg' 경로로 수정하세요 */
+            background: url('망각전야 홈페이지 1.jpg') center/cover no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 하단 배경색과 자연스럽게 겹치도록 그라데이션 마스크 처리 */
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
+            transition: opacity 0.3s ease;
+        }
+
+        /* 2. 스크롤 시 나타날 고정 상단 배너 (세로 축소 버전) */
+        .top-banner-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px; /* 요청대로 세로 크기를 콤팩트하게 축소 */
+            /* 실제 적용 시 '망각전야 상단 배너.jpg' 경로로 수정하세요 */
+            background: url('망각전야 상단 배너.jpg') center/cover no-repeat;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            /* 배너 하단이 배경색 #192326과 자연스럽게 이어지도록 그라데이션 페이드 */
+            border-bottom: 2px solid rgba(255,255,255,0.05);
+        }
+        /* 배너 내부의 자연스러운 어둠 연출 */
+        .top-banner-view::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(to bottom, rgba(25, 35, 38, 0) 0%, #192326 100%);
+        }
+
+        /* 스크롤이 내려갔을 때 활성화될 클래스 */
+        body.scrolled .hero-section {
+            opacity: 0.3;
+        }
+        body.scrolled .top-banner-view {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 메인 콘텐츠 영역 (버튼들이 위치할 곳) */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* 상단 배너가 고정되었을 때 콘텐츠가 가려지지 않도록 여백 확보 */
+        body.scrolled .main-content {
+            margin-top: 140px;
+        }
+
+        /* 3. 버튼 디자인 레이아웃 (참고 이미지 기반 크툴루/어두운 텍스처 스타일) */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .menu-item {
+            position: relative;
+            background: #11181a; /* 버튼 배경색 (#192326보다 더 어두운 톤) */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 140px;
+        }
+
+        /* 기하학적 선 효과 (버튼 디자인 참고의 격자/마법진 느낌 재현) */
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            pointer-events: none;
+        }
+
+        /* 마우스 오버(호버) 시 효과 */
+        .menu-item:hover {
+            background: #162023;
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.05), 0 10px 20px rgba(0,0,0,0.4);
+            transform: translateY(-2px);
+        }
+
+        /* 버튼 텍스트 스타일 (베이지/가죽지 느낌의 미니멀 폰트 컬러) */
+        .menu-item span {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: #ccd7d9;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            transition: color 0.3s;
+        }
+        .menu-item:hover span {
+            color: #ffffff;
+        }
+
+        /* 가상의 아이콘 자리 (디자인 참고 이미지의 크툴루풍 문양 대용 장식) */
+        .menu-item .icon-deco {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.15);
+            transform: rotate(45deg);
+            transition: all 0.3s;
+            position: relative;
+        }
+        .menu-item:hover .icon-deco {
+            border-color: #ffffff;
+            transform: rotate(135deg);
+        }
+
+        /* 타이틀 섹션 */
+        .section-title {
+            text-align: center;
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            color: #9eb1b6;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero-section" id="hero"></div>
+
+    <div class="top-banner-view" id="topBanner"></div>
+
+    <div class="main-content">
+        <h2 class="section-title">데이터베이스 메뉴</h2>
+        
+        <div class="menu-grid">
+            <div class="menu-item"><div class="icon-deco"></div><span>게임 내 이벤트</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>각성체 정보</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>계역별 정보</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>환몽심잠 정보</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>융재금구 정보</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>시스템 정보</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>은열쇠 정보</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>명륜 정보</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>비밀계약 정보</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>페이즈 체스 정보</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>뉴비 팁</span></div>
+            <div class="menu-item"><div class="icon-deco"></div><span>교환코드</span></div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('scroll', function() {
+            const body = document.body;
+            // 스크롤이 150px 이상 내려가면 상단 배너 모드로 전환
+            if (window.scrollY > 150) {
+                body.classList.add('scrolled');
+            } else {
+                body.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>
