@@ -18,22 +18,62 @@
             overflow-x: hidden;
         }
 
-        /* 1. 초기 화면 (망각전야 홈페이지 1) */
+        /* 1. 초기 화면 (클릭 전까지 화면 전체를 고정 수호) */
         .hero-section {
-            position: relative;
+            position: fixed; /* 스크롤 고정 */
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100vh;
             background: url(front.jpg) center/cover no-repeat;
             display: flex;
             justify-content: center;
             align-items: center;
-            /* 하단 배경색과 자연스럽게 겹치도록 그라데이션 마스크 처리 */
-            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
-            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
-            transition: opacity 0.3s ease;
+            z-index: 500; /* 콘텐츠보다 위에 배치 */
+            cursor: pointer;
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s;
+        }
+        /* 클릭 유도 안내 텍스트 (원치 않으시면 삭제 가능) */
+        .hero-section::after {
+            content: 'CLICK TO ENTER';
+            position: absolute;
+            bottom: 15%;
+            color: rgba(227, 232, 233, 0.5);
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            animation: blink 2s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
 
-        /* 2. 스크롤 시 나타날 고정 상단 배너 (세로 축소 버전) */
+        /* 클릭 후 첫 화면이 사라질 때 적용될 클래스 */
+        .hero-section.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* [추가] 클릭 시 퍼져나갈 물결(Ripple) 스타일 */
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(158, 177, 182, 0.4) 0%, rgba(25, 35, 38, 0) 70%);
+            border: 2px solid rgba(158, 177, 182, 0.2);
+            pointer-events: none;
+            transform: scale(0);
+            animation: ripple-animation 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            z-index: 600;
+        }
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* 2. 상단 고정 배너 (첫 화면이 사라진 후 활성화) */
         .top-banner-view {
             position: fixed;
             top: 0;
@@ -44,11 +84,10 @@
             z-index: 100;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
             border-bottom: 2px solid rgba(255,255,255,0.05);
         }
-        /* 배너 내부의 자연스러운 어둠 연출 */
         .top-banner-view::after {
             content: '';
             position: absolute;
@@ -59,27 +98,28 @@
             background: linear-gradient(to bottom, rgba(25, 35, 38, 0) 0%, #192326 100%);
         }
 
-        /* 스크롤이 내려갔을 때 활성화될 클래스 */
-        body.scrolled .hero-section {
-            opacity: 0.3;
-        }
-        body.scrolled .top-banner-view {
+        /* 페이지가 완전히 열렸을 때 상단 배너 표시 */
+        body.page-opened .top-banner-view {
             opacity: 1;
             visibility: visible;
         }
 
-        /* 메인 콘텐츠 영역 (버튼들이 위치할 곳) */
+        /* 메인 콘텐츠 영역 (첫 화면 뒤에 대기 중인 본문) */
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
             padding: 60px 20px;
             position: relative;
             z-index: 10;
+            /* 배너에 가려지지 않도록 미리 여백 확보 및 부드러운 등장 연출 */
+            margin-top: 180px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease 0.3s, transform 1s cubic-bezier(0.25, 1, 0.5, 1) 0.3s;
         }
-        
-        /* 상단 배너가 고정되었을 때 콘텐츠가 가려지지 않도록 여백 확보 */
-        body.scrolled .main-content {
-            margin-top: 140px;
+        body.page-opened .main-content {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* 타이틀 섹션 (정보모음) */
@@ -107,7 +147,6 @@
             background: #11181a;
         }
 
-        /* 격자형 톤앤매너 유지를 위한 안쪽 미세 테두리 */
         .event-slider-container::before {
             content: '';
             position: absolute;
@@ -363,6 +402,8 @@
 </head>
 <body>
 
+    <div class="hero-section" id="heroSection" onclick="handleHeroClick(event)"></div>
+
     <audio id="bgm" src="사야의 노래.mp3" loop></audio>
 
     <div class="audio-controller">
@@ -374,8 +415,6 @@
         </button>
         <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="0" oninput="changeVolume(this.value)">
     </div>
-
-    <div class="hero-section" id="hero"></div>
 
     <div class="top-banner-view" id="topBanner"></div>
 
@@ -423,61 +462,54 @@
         const bgm = document.getElementById('bgm');
         const volumeSlider = document.getElementById('volumeSlider');
         const muteBtn = document.getElementById('muteBtn');
+        const heroSection = document.getElementById('heroSection');
         
         let userInteractedWithVolume = false; 
-        let targetVolume = 0.0; // 처음엔 볼륨 0에서 대기
+        let targetVolume = 0.0; 
         let fadeAnimationId = null;
-        let isTriggered = false; // 재생 트리거 작동 여부 확인 변수
+        let pageOpened = false;
 
-        // [수정] 인터랙션이 감지되면 정확히 1초(1000ms) 뒤에 미디어를 틀어버리는 타이머 함수
-        function triggerAudioWithDelay() {
-            if (isTriggered) return;
-            isTriggered = true;
-            removeAudioTriggers();
+        // [수정] 초기 화면 클릭 시 물결 이펙트 및 음악 재생, 페이지 전환 통합 제어
+        function handleHeroClick(e) {
+            if (pageOpened) return;
 
+            // 1. 클릭 좌표 구하기 및 물결(Ripple) 소환
+            const rect = heroSection.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple-effect');
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            
+            // 물결 크기 설정 (화면을 가득 채울 수 있는 크기)
+            const size = Math.max(window.innerWidth, window.innerHeight);
+            ripple.style.width = `${size}px`;
+            ripple.style.height = `${size}px`;
+            ripple.style.marginLeft = `${-size/2}px`;
+            ripple.style.marginTop = `${-size/2}px`;
+
+            heroSection.appendChild(ripple);
+
+            // 2. 음악 즉시 재생 시도 (사용자 명시적 클릭이므로 백퍼센트 풀림)
+            targetVolume = 0.7; // 메인 볼륨 타겟
+            bgm.play().then(() => {
+                if (!fadeAnimationId) smoothVolumeFade(); 
+            }).catch(() => {});
+
+            // 3. 물결이 일렁이며 퍼지는 타이밍에 맞춰 첫 화면 페이드아웃 및 본문 활성화
             setTimeout(() => {
-                // 상단 스크롤 위치에 맞춰 알맞은 타겟 볼륨 지정 후 플레이
-                targetVolume = window.scrollY > 150 ? 0.2 : 0.7;
-                bgm.play().then(() => {
-                    if (!fadeAnimationId) smoothVolumeFade(); 
-                }).catch(e => {
-                    console.log("재생 제한 상태가 아직 풀리지 않았습니다.");
-                    isTriggered = false; // 실패 시 리스너 재등록을 위해 복구
-                    addAudioTriggers();
-                });
-            }, 1000); // 1000ms = 1초 딜레이
-        }
+                pageOpened = true;
+                heroSection.classList.add('fade-out');
+                document.body.classList.add('page-opened');
+            }, 400); // 0.4초 뒤 전환 시작
 
-        function addAudioTriggers() {
-            window.addEventListener('wheel', triggerAudioWithDelay, { passive: true });
-            window.addEventListener('touchmove', triggerAudioWithDelay, { passive: true });
-            window.addEventListener('click', triggerAudioWithDelay, { once: true });
-            window.addEventListener('touchstart', triggerAudioWithDelay, { once: true });
-        }
-
-        function removeAudioTriggers() {
-            window.removeEventListener('wheel', triggerAudioWithDelay);
-            window.removeEventListener('touchmove', triggerAudioWithDelay);
-            window.removeEventListener('click', triggerAudioWithDelay);
-            window.removeEventListener('touchstart', triggerAudioWithDelay);
-        }
-        
-        // 초기 이벤트 등록
-        addAudioTriggers();
-
-        // [추가] 브라우저가 첫 진입 시 권한을 예외적으로 바로 주는 상태일 때도 1초 대기 후 재생
-        document.addEventListener("DOMContentLoaded", () => {
-            bgm.volume = 0; 
+            // 애니메이션이 끝나면 물결 엘리먼트 제거
             setTimeout(() => {
-                if(!isTriggered) {
-                    targetVolume = 0.7;
-                    bgm.play().then(() => {
-                        smoothVolumeFade();
-                        removeAudioTriggers();
-                    }).catch(() => {});
-                }
-            }, 1000);
-        });
+                ripple.remove();
+            }, 1200);
+        }
 
         // 부드러운 볼륨 전환을 처리하는 프레임 애니메이션 루프
         function smoothVolumeFade() {
@@ -498,19 +530,14 @@
             fadeAnimationId = requestAnimationFrame(smoothVolumeFade);
         }
 
-        // 상단 배너 스크롤 트래킹 및 목표 볼륨 설정
+        // 페이지가 열린 후 하단 본문에서 스크롤을 내릴 때만 음악이 잔잔해지도록 제어
         window.addEventListener('scroll', function() {
-            const body = document.body;
-            if (window.scrollY > 150) {
-                body.classList.add('scrolled');
-                if (!userInteractedWithVolume && isTriggered) {
-                    targetVolume = 0.2; 
-                }
+            if (!pageOpened) return; // 첫 화면 상태에서는 연산 방지
+
+            if (window.scrollY > 200) {
+                if (!userInteractedWithVolume) targetVolume = 0.2; 
             } else {
-                body.classList.remove('scrolled');
-                if (!userInteractedWithVolume && isTriggered) {
-                    targetVolume = 0.7; 
-                }
+                if (!userInteractedWithVolume) targetVolume = 0.7; 
             }
         });
 
