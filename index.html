@@ -29,10 +29,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 9999; /* 최상단 레이어 배치로 클릭 가로채기 방지 */
+            z-index: 9999; 
             cursor: pointer;
             overflow: hidden;
-            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+            /* [수정] 화면 전환이 1~2초 사이(1.5초) 동안 서서히 일어나도록 속도 감속 */
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.5s;
         }
         
         /* 하단 그라데이션 마스크 처리 */
@@ -72,16 +73,16 @@
             pointer-events: none;
         }
 
-        /* [핵심 추가] 클릭 좌표 중심 일렁이는 물결(Ripple) 파동 디자인 */
+        /* 클릭 좌표 중심 일렁이는 물결(Ripple) 파동 디자인 */
         .ripple-effect {
             position: absolute;
             border-radius: 50%;
-            /* 인게임 분위기에 맞춘 신비로운 다크 청록빛 파동 그라데이션 */
             background: radial-gradient(circle, rgba(158, 177, 182, 0.5) 0%, rgba(38, 55, 59, 0.2) 40%, rgba(25, 35, 38, 0) 70%);
             border: 1px solid rgba(158, 177, 182, 0.25);
             pointer-events: none;
             transform: scale(0);
-            animation: ripple-animation 1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            /* 물결이 퍼지는 시간도 살짝 늘려 공간감을 줌 */
+            animation: ripple-animation 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
             z-index: 10001;
         }
         @keyframes ripple-animation {
@@ -91,7 +92,7 @@
             }
         }
 
-        /* 2. 고정 상단 배너 (첫 화면 통과 전엔 숨김) */
+        /* 2. 고정 상단 배너 */
         .top-banner-view {
             position: fixed;
             top: 0;
@@ -102,7 +103,7 @@
             z-index: 100;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
             border-bottom: 2px solid rgba(255,255,255,0.05);
         }
@@ -131,7 +132,8 @@
             margin-top: 180px;
             opacity: 0;
             transform: translateY(40px);
-            transition: opacity 0.8s ease 0.2s, transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.2s;
+            /* 본문 콘텐츠도 화면 전환 속도에 맞춰 부드럽게 등장하도록 딜레이 조정 */
+            transition: opacity 1.2s ease 0.4s, transform 1.2s cubic-bezier(0.25, 1, 0.5, 1) 0.4s;
         }
         body.page-opened .main-content {
             opacity: 1;
@@ -462,6 +464,7 @@
         let targetVolume = 0.0; 
         let fadeAnimationId = null;
         let pageOpened = false;
+        let isScrollingDown = false; // 현재 스크롤이 내려가 있는 상태인지 체크
 
         // 클릭 제어 핸들러 펑션
         function handleHeroClick(e) {
@@ -471,11 +474,9 @@
             const ripple = document.createElement('span');
             ripple.classList.add('ripple-effect');
             
-            // fixed 속성에 맞춰 뷰포트 기준 좌표 대입
             ripple.style.left = `${e.clientX}px`;
             ripple.style.top = `${e.clientY}px`;
             
-            // 화면 대각선 최대 크기 커버 수치 지정
             const size = Math.max(window.innerWidth, window.innerHeight) * 2;
             ripple.style.width = `${size}px`;
             ripple.style.height = `${size}px`;
@@ -484,26 +485,34 @@
 
             heroSection.appendChild(ripple);
 
-            // 2. 오디오 볼륨 락 해제 및 즉시 플레이 가동
+            // 2. 오디오 볼륨 락 해제 및 즉시 플레이 (초기 볼륨 70% 지정)
             targetVolume = 0.7; 
             bgm.play().then(() => {
                 if (!fadeAnimationId) smoothVolumeFade(); 
             }).catch(() => {
-                // 브라우저가 최후의 수단으로 막았을 경우 에러 처리 우회
                 if (!fadeAnimationId) smoothVolumeFade();
             });
 
-            // 3. 물결 파동 확산 타이밍에 맞춘 스무스 화면 체인지 체인징 작동 (0.45초 딜레이)
+            // 3. 서서히 웅장하게 화면 체인지 작동 (0.45초 뒤 커버 페이드아웃 처리 시작)
             setTimeout(() => {
                 pageOpened = true;
                 heroSection.classList.add('fade-out');
                 document.body.classList.add('page-opened');
+                
+                // [핵심 추가] 클릭 후 진입한 메인 화면에서 2초(2000ms) 동안은 70% 볼륨을 묵직하게 유지하다가, 
+                // 그 이후에 자동으로 잔잔한 볼륨(20%)으로 서서히 줄어들게 타이머를 세팅합니다.
+                setTimeout(() => {
+                    if (!userInteractedWithVolume && !isScrollingDown) {
+                        targetVolume = 0.2; // 1~3초(2초) 뒤에 부드럽게 감소 시작
+                    }
+                }, 2000);
+
             }, 450);
 
             // 애니메이션 파기 데이터 클렌징
             setTimeout(() => {
                 ripple.remove();
-            }, 1200);
+            }, 1500);
         }
 
         // 부드러운 볼륨 전환을 처리하는 프레임 애니메이션 루프
@@ -514,8 +523,9 @@
             }
 
             const diff = targetVolume - bgm.volume;
+            // [수정] 볼륨 변환 속도를 살짝 늦춰서(0.05 -> 0.03) 페이드 아웃이 훨씬 스르륵 일어나도록 변경
             if (Math.abs(diff) > 0.005) {
-                bgm.volume += diff * 0.05; 
+                bgm.volume += diff * 0.03; 
                 volumeSlider.value = bgm.volume;
             } else {
                 bgm.volume = targetVolume;
@@ -530,8 +540,11 @@
             if (!pageOpened) return; 
 
             if (window.scrollY > 200) {
+                isScrollingDown = true;
                 if (!userInteractedWithVolume) targetVolume = 0.2; 
             } else {
+                isScrollingDown = false;
+                // 스크롤을 다시 맨 위로 올리면 원본 음량(70%)으로 복귀
                 if (!userInteractedWithVolume) targetVolume = 0.7; 
             }
         });
