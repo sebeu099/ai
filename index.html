@@ -120,7 +120,6 @@
         .slider-wrapper {
             display: flex;
             width: 100%;
-            /* [변경] 고정 높이를 없애고 원본 이미지 비율(예: 16:9)을 유지하도록 설정 */
             aspect-ratio: 16 / 9; 
             transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
         }
@@ -148,7 +147,6 @@
             color: #8a999d;
         }
         
-        /* [추가] 링크 이동 가능 슬라이더용 커서 스타일 인터랙션 */
         .slide-item.clickable {
             cursor: pointer;
         }
@@ -182,7 +180,6 @@
             z-index: 10;
             transition: all 0.25s ease;
         }
-        /* 화살표 내부 인게임 사각 싱크를 위한 앵글 처리 */
         .slider-arrow-inner {
             width: 12px;
             height: 12px;
@@ -203,7 +200,6 @@
             border-color: #ffffff;
         }
 
-        /* 모바일 디바이스 등 터치 환경에서는 화살표를 자동 숨김 처리 */
         @media (max-width: 768px) {
             .slider-arrow { display: none; }
         }
@@ -302,7 +298,7 @@
         }
 
         /* ========================================================
-           [추가] 오디오 컨트롤러 스타일 (우측 하단 고정)
+           오디오 컨트롤러 스타일 (우측 하단 고정)
            ======================================================== */
         .audio-controller {
             position: fixed;
@@ -424,35 +420,50 @@
     </div>
 
     <script>
-        // 오디오 제어 변수
         const bgm = document.getElementById('bgm');
         const volumeSlider = document.getElementById('volumeSlider');
         const muteBtn = document.getElementById('muteBtn');
         
         let userInteractedWithVolume = false; 
-        let targetVolume = 0.7; // 목표로 하는 볼륨값
+        let targetVolume = 0.7; 
         let fadeAnimationId = null;
 
-        // 브라우저 재생 정책 우회 인터랙션 활성화
+        // [핵심 변경] 사용자가 페이지를 '터치(touchstart)'하거나 '클릭(mousedown)'하자마자 0.001초만에 권한을 풀고 재생시킵니다.
         function initAudio() {
             if (bgm.paused) {
                 bgm.play().then(() => {
-                    smoothVolumeFade(); // 오디오 시작 후 페이드 루프 작동
-                }).catch(e => console.log("오디오 재생 대기 중..."));
+                    // 첫 재생이 정상 성공하면 부드러운 페이드 연산 애니메이션 가동
+                    if (!fadeAnimationId) smoothVolumeFade(); 
+                }).catch(e => {
+                    // 브라우저가 완전히 막았을 때를 대비한 안전 장치
+                    console.log("브라우저 자동재생 제한 우회 시도 중...");
+                });
             }
         }
+        
+        // 반응 속도를 최대로 올리기 위해 모든 주요 마우스/터치 액션에 이벤트를 바인딩합니다.
         window.addEventListener('click', initAudio, { once: true });
+        window.addEventListener('touchstart', initAudio, { once: true });
+        window.addEventListener('mousedown', initAudio, { once: true });
         window.addEventListener('scroll', initAudio, { once: true });
+
+        // 브라우저가 혹시라도 처음부터 허용해주는 환경인 경우 즉시 실행 시도
+        document.addEventListener("DOMContentLoaded", () => {
+            bgm.volume = 0.7; // 초기 시작 볼륨 명시
+            bgm.play().then(() => {
+                smoothVolumeFade();
+            }).catch(() => {
+                // 실패 시 유저가 화면을 건드릴 때까지 대기 (위의 이벤트 리스너가 처리)
+            });
+        });
 
         // 부드러운 볼륨 전환을 처리하는 프레임 애니메이션 루프
         function smoothVolumeFade() {
             if (userInteractedWithVolume || bgm.muted) {
-                // 사용자가 수동 조절 중이거나 음소거 상태면 자동 페이드 연산을 쉽니다.
                 fadeAnimationId = requestAnimationFrame(smoothVolumeFade);
                 return;
             }
 
-            // 현재 볼륨에서 목표 볼륨으로 매 프레임마다 약 5%씩 서서히 접근 (감속 연산)
             const diff = targetVolume - bgm.volume;
             if (Math.abs(diff) > 0.005) {
                 bgm.volume += diff * 0.05; 
@@ -471,17 +482,16 @@
             if (window.scrollY > 150) {
                 body.classList.add('scrolled');
                 if (!userInteractedWithVolume) {
-                    targetVolume = 0.2; // 스크롤 내리면 부드럽게 줄여나갈 목표치
+                    targetVolume = 0.2; 
                 }
             } else {
                 body.classList.remove('scrolled');
                 if (!userInteractedWithVolume) {
-                    targetVolume = 0.7; // 상단으로 오면 부드럽게 키워나갈 목표치
+                    targetVolume = 0.7; 
                 }
             }
         });
 
-        // 사용자가 슬라이더 바를 마우스/터치로 직접 움직일 때 작동
         function changeVolume(val) {
             userInteractedWithVolume = true; 
             targetVolume = parseFloat(val);
@@ -490,7 +500,6 @@
             updateMuteIcon(bgm.muted);
         }
 
-        // 음소거 처리
         function toggleMute() {
             userInteractedWithVolume = true; 
             bgm.muted = !bgm.muted;
@@ -559,7 +568,6 @@
             autoSlider = setInterval(nextSlide, slideInterval);
         }
 
-        // 하단 정보 버튼 라우터 함수
         function navigateToPage(menuType) {
             switch (menuType) {
                 case 'awakening':
@@ -587,5 +595,4 @@
     </script>
 </body>
 </html>
-</body>
 </html>
