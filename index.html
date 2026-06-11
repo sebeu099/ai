@@ -300,9 +300,84 @@
             border-color: #ffffff;
             transform: rotate(135deg);
         }
+
+        /* ========================================================
+           [추가] 오디오 컨트롤러 스타일 (우측 하단 고정)
+           ======================================================== */
+        .audio-controller {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(17, 24, 26, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 10px 15px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s, border-color 0.3s;
+        }
+        .audio-controller:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(22, 32, 35, 0.95);
+        }
+        .mute-btn {
+            background: none;
+            border: none;
+            color: #ccd7d9;
+            cursor: pointer;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            width: 24px;
+            height: 24px;
+        }
+        .mute-btn:hover {
+            color: #ffffff;
+        }
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 80px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 10px;
+            height: 10px;
+            background: #ccd7d9;
+            border-radius: 50%;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: #ffffff;
+            transform: scale(1.2);
+        }
     </style>
 </head>
 <body>
+
+    <audio id="bgm" src="사야의 노래.mp3" loop></audio>
+
+    <div class="audio-controller">
+        <button class="mute-btn" id="muteBtn" onclick="toggleMute()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11.536 14.01A8.47 8.47 0 0 0 14 10c0-1.68-.487-3.243-1.325-4.556a.5.5 0 0 0-.85.526A7.47 7.47 0 0 1 13 10c0 1.472-.4 2.852-1.101 4.028a.5.5 0 0 0 .848.544z"/>
+                <path d="M9.774 11.246A1 1 0 0 0 10 11V5a1 1 0 0 0-1.707-.707L5.828 6.757H4a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1.828l2.465 2.465a1 1 0 0 0 .481.224z"/>
+            </svg>
+        </button>
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.05" value="0.7" oninput="changeVolume(this.value)">
+    </div>
 
     <div class="hero-section" id="hero"></div>
 
@@ -349,15 +424,70 @@
     </div>
 
     <script>
-        // 상단 배너 스크롤 트래킹
+        // 오디오 시스템 변수 제어
+        const bgm = document.getElementById('bgm');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const muteBtn = document.getElementById('muteBtn');
+        let userInteractedWithVolume = false; // 사용자가 수동으로 볼륨 조절했는지 체크
+
+        // 브라우저 정책상 첫 클릭/스크롤 인터랙션 때 오디오를 시작시킵니다.
+        function initAudio() {
+            if (bgm.paused) {
+                bgm.play().catch(e => console.log("자동 재생 제한 완화를 위한 대기 중..."));
+            }
+        }
+        window.addEventListener('click', initAudio, { once: true });
+        window.addEventListener('scroll', initAudio, { once: true });
+
+        // 상단 배너 스크롤 트래킹 및 오디오 볼륨 자동 변환 가동
         window.addEventListener('scroll', function() {
             const body = document.body;
             if (window.scrollY > 150) {
                 body.classList.add('scrolled');
+                
+                // 사용자가 직접 볼륨 조절 안 했을 때만 스크롤에 맞춰 잔잔하게 (20%) 변경
+                if (!userInteractedWithVolume && !bgm.muted) {
+                    bgm.volume = 0.2;
+                    volumeSlider.value = 0.2;
+                }
             } else {
                 body.classList.remove('scrolled');
+                
+                // 다시 최상단 메인화면으로 오면 원래 크기 (70%) 변경
+                if (!userInteractedWithVolume && !bgm.muted) {
+                    bgm.volume = 0.7;
+                    volumeSlider.value = 0.7;
+                }
             }
         });
+
+        // 사용자가 슬라이더로 직접 볼륨 조절할 때 함수
+        function changeVolume(val) {
+            userInteractedWithVolume = true; // 스크롤 자동 조절 비활성화
+            bgm.volume = val;
+            bgm.muted = (val == 0);
+            updateMuteIcon(bgm.muted);
+        }
+
+        // 음소거 토글 함수
+        function toggleMute() {
+            userInteractedWithVolume = true; // 스크롤 자동 조절 비활성화
+            bgm.muted = !bgm.muted;
+            updateMuteIcon(bgm.muted);
+            if (!bgm.muted && bgm.volume === 0) {
+                bgm.volume = 0.5;
+                volumeSlider.value = 0.5;
+            }
+        }
+
+        // 음소거 상태에 따른 아이콘 변경
+        function updateMuteIcon(isMuted) {
+            if (isMuted) {
+                muteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zm7.137 2.096a.5.5 0 1 1 .708.708L12.707 8l1.855 1.846a.5.5 0 0 1-.708.708L12 8.707l-1.854 1.847a.5.5 0 1 1-.708-.708L11.293 8 9.438 6.154a.5.5 0 0 1 .708-.708L12 7.293l1.854-1.747z"/></svg>`;
+            } else {
+                muteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.536 14.01A8.47 8.47 0 0 0 14 10c0-1.68-.487-3.243-1.325-4.556a.5.5 0 0 0-.85.526A7.47 7.47 0 0 1 13 10c0 1.472-.4 2.852-1.101 4.028a.5.5 0 0 0 .848.544z"/><path d="M9.774 11.246A1 1 0 0 0 10 11V5a1 1 0 0 0-1.707-.707L5.828 6.757H4a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1.828l2.465 2.465a1 1 0 0 0 .481.224z"/></svg>`;
+            }
+        }
 
         // 10초 주기 무한 루프 배너 기믹
         let currentIdx = 0;
@@ -423,7 +553,6 @@
                 case 'coupon-code':
                     window.location.href = 'coupon_code.html'; 
                     break;
-                // 배너 2, 3번 클릭 핸들러 추가 커스텀 처리 구역
                 case 'event-detail-2':
                     window.location.href = 'event_detail_2.html';
                     break;
