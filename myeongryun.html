@@ -3,100 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>명륜 정보 탭</title>
-    <link rel="stylesheet" href="style.css">
+    <title>망각전야 - 명륜 정보</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #192326;
+            color: #e3e8e9;
+            font-family: 'Noto Sans KR', sans-serif;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            color: #9eb1b6;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+        }
+
+        /* 각성체 정보 탭의 그리드 모션 시스템 그대로 이식 */
+        .myeongryun-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 280px));
+            justify-content: center;
+            gap: 25px;
+            transition: all 0.4s ease;
+        }
+
+        /* 각성체 카드의 기본 모션 인터랙션 이식 */
+        .myeongryun-card {
+            position: relative;
+            background: #11181a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            opacity: 1;
+            transform: scale(1);
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        border-color 0.4s ease, 
+                        box-shadow 0.4s ease,
+                        opacity 0.3s ease,
+                        background-color 0.4s ease;
+        }
+
+        /* 호버 시 위로 뜨며 그림자, 스케일이 커지는 시그니처 모션 */
+        .myeongryun-card:hover {
+            background: #162023;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            transform: translateY(-8px) scale(1.04);
+            border-color: rgba(255, 255, 255, 0.4);
+            z-index: 5;
+        }
+
+        .myeongryun-card::before {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        /* 이미지 박스 및 스케일 모션 */
+        .image-box {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            background: #0d1214;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .image-box .myeong-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        
+        .myeongryun-card:hover .image-box .myeong-img {
+            transform: scale(1.06);
+        }
+
+        /* 기본 전면 노출 프로필 */
+        .profile-desc {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        /* 요구사항: 제목은 노란색 텍스트 처리 */
+        .myeong-name-kr { 
+            font-size: 1.3rem; 
+            font-weight: 700; 
+            color: #ffd700; 
+            letter-spacing: 1px; 
+            margin-bottom: 4px; 
+        }
+        
+        /* 요구사항: 주옵션은 노란색 텍스트 처리 */
+        .myeong-main-option { 
+            font-size: 0.9rem; 
+            color: #ffd700; 
+            letter-spacing: 0.5px; 
+            background: rgba(255, 255, 255, 0.04); 
+            padding: 4px 12px; 
+            display: inline-flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        /* 공유해주신 코드의 핵심 [반투명 하단 확장 설명 레이어] 메커니즘 적용 */
+        .info-expand-layer {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.45s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
+            padding: 0 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0);
+            background: rgba(10, 15, 16, 0.95); /* 요구사항: 반투명한 검은색 카드 느낌 강화 */
+        }
+
+        /* 호버 시 부드럽게 미끄러지듯 노출되는 텍스트 공간 확장 모션 */
+        .myeongryun-card:hover .info-expand-layer {
+            max-height: 500px; /* 텍스트 양을 고려하여 안전하게 확장 높이 확보 */
+            opacity: 1;
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-title-label {
+            font-size: 0.8rem;
+            color: #8a999d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-align: left;
+            border-left: 2px solid rgba(255,255,255,0.2);
+            padding-left: 6px;
+        }
+
+        /* 요구사항: 설명은 흰색 텍스트 처리 */
+        .info-description {
+            font-size: 0.85rem;
+            color: #ffffff;
+            line-height: 1.6;
+            text-align: left;
+            word-break: keep-all;
+        }
+
+        /* 하단 메인 이동 버튼 세션 모션 매칭 */
+        .back-home-container { text-align: center; margin-top: 40px; }
+        .back-btn { 
+            background: transparent; 
+            border: 1px solid rgba(255,255,255,0.15); 
+            color: #ccd7d9; 
+            padding: 12px 30px; 
+            cursor: pointer; 
+            letter-spacing: 1px; 
+            transition: all 0.25s; 
+            transform: skewX(-10deg);
+        }
+        .back-btn span {
+            display: inline-block;
+            transform: skewX(10deg);
+        }
+        .back-btn:hover { border-color: #ffffff; color: #ffffff; background: #11181a; }
+    </style>
 </head>
 <body>
 
-<div class="card-container">
-    <div class="card">
-        <img src="감춰진 수레바퀴.png" alt="감춰진 수레바퀴" class="card-img">
-        <div class="card-overlay">
-            <h3 class="title">감춰진 수레바퀴</h3>
-            <p class="main-option">주옵션: 은열쇠 충전 21.6</p>
-            <p class="description">
-                <strong>팀 유일:</strong> 은열쇠 충전 한도가 100% 증가한다. 손패 상한이 2 증가하고, 다른 명륜이 제공하는 손패 상한과 중첩되지 않는다. 장비자의 은열쇠 충전이 13/17/21/25% 증가한다. 장비자가 카드를 사용하면, 해당 턴 동안 장비자 명령 카드의 크리티컬 확률, 크리티컬 피해, 생성되는 방어막, 광기 및 힘이 3/4/5/6% 증가하며, 최대 5회까지 중첩된다.
-            </p>
-        </div>
-    </div>
+    <div class="main-content">
+        <h2 class="section-title">명륜 정보</h2>
 
-    <div class="card">
-        <img src="자비로운양육.png" alt="자비로운 양육" class="card-img">
-        <div class="card-overlay">
-            <h3 class="title">자비로운 양육</h3>
-            <p class="main-option">주옵션: 은열쇠 충전 21.6</p>
-            <p class="description">
-                <strong>팀 유일:</strong> 손패 상한이 2 증가하고, 다른 명륜이 제공하는 손패 상한과 중첩되지 않는다. 턴 종료 시, 장비자의 은열쇠 충전의 150/200/250/300%에 해당하는 은열쇠 에너지를 획득한다. 은열쇠를 발동할 때마다 모든 각성체가 3/4/5/6 광기를 획득한다. 현재 영역이 "혈육"일 경우, 은열쇠를 발동할 때마다 배아 융합이 13/17/21/25% 증가한다.
-            </p>
-        </div>
-    </div>
+        <div class="myeongryun-grid">
+            
+            <div class="myeongryun-card">
+                <div class="image-box">
+                    <img src="감춰진 수레바퀴.png" class="myeong-img" alt="감춰진 수레바퀴">
+                </div>
+                <div class="profile-desc">
+                    <div class="myeong-name-kr">감춰진 수레바퀴</div>
+                    <div class="myeong-main-option">주옵션: 은열쇠 충전 21.6</div>
+                </div>
+                <div class="info-expand-layer">
+                    <div class="info-title-label">명륜 상세 정보</div>
+                    <div class="info-description">
+                        팀 유일: 은열쇠 충전 한도가 100% 증가한다. 손패 상한이 2 증가하고, 다른 명륜이 제공하는 손패 상한과 중첩되지 않는다. 장비자의 은열쇠 충전이 13/17/21/25% 증가한다. 장비자가 카드를 사용하면, 해당 턴 동안 장비자 명령 카드의 크리티컬 확률, 크리티컬 피해, 생성되는 방어막, 광기 및 힘이 3/4/5/6% 증가하며, 최대 5회까지 중첩된다.
+                    </div>
+                </div>
+            </div>
 
-    <div class="card">
-        <img src="마지막시편.png" alt="마지막 시편" class="card-img">
-        <div class="card-overlay">
-            <h3 class="title">마지막 시편</h3>
-            <p class="main-option">주옵션: 죽음 저항 50.4%</p>
-            <p class="description">
-                <strong>팀 유일:</strong> 장비자 명령 카드의 크리티컬 확률, 크리티컬 피해, 방어막, HP 회복, 광기, 힘이 11/14/17/20% 증가한다. 현재 영역이 "초차원"일 경우, 소멸 발동 시 110/140/170/200 은열쇠 에너지를 획득한다. 초차원 턴 진입 후, 이 턴 동안 은열쇠 효과가 2회 발동한다.
-            </p>
-        </div>
-    </div>
+            <div class="myeongryun-card">
+                <div class="image-box">
+                    <img src="자비로운양육.png" class="myeong-img" alt="자비로운 양육">
+                </div>
+                <div class="profile-desc">
+                    <div class="myeong-name-kr">자비로운 양육</div>
+                    <div class="myeong-main-option">주옵션: 은열쇠 충전 21.6</div>
+                </div>
+                <div class="info-expand-layer">
+                    <div class="info-title-label">명륜 상세 정보</div>
+                    <div class="info-description">
+                        팀 유일: 손패 상한이 2 증가하고, 다른 명륜이 제공하는 손패 상한과 중첩되지 않는다. 턴 종료 시, 장비자의 은열쇠 충전의 150/200/250/300%에 해당하는 은열쇠 에너지를 획득한다. 은열쇠를 발동할 때마다 모든 각성체가 3/4/5/6 광기를 획득한다. 현재 영역이 "혈육"일 경우, 은열쇠를 발동할 때마다 배아 융합이 13/17/21/25% 증가한다.
+                    </div>
+                </div>
+            </div>
 
-    <div class="card">
-        <img src="견딜 수 없는 자유.png" alt="견딜 수 없는 자유" class="card-img">
-        <div class="card-overlay">
-            <h3 class="title">견딜 수 없는 자유</h3>
-            <p class="main-option">주옵션: 피해 증폭 14.4%</p>
-            <p class="description">
-                <strong>팀 유일:</strong> 손패 상한이 2 증가하고, 다른 명륜이 제공하는 손패 상한과 중첩되지 않는다. 장비자의 방어막 및 기본 피해가 9/11/13/15% 증가한다. 초차원 턴에 진입 시, 장비자가 35/50/65/80 광기를 획득한다. 소멸 발동시 모든 각성체의 임시 크리티컬 피해가 13/17/21/25% 증가한다. 이 효과는 3턴의 쿨타임이 존재한다.
-            </p>
-        </div>
-    </div>
+            <div class="myeongryun-card">
+                <div class="image-box">
+                    <img src="마지막시편.png" class="myeong-img" alt="마지막 시편">
+                </div>
+                <div class="profile-desc">
+                    <div class="myeong-name-kr">마지막 시편</div>
+                    <div class="myeong-main-option">주옵션: 죽음 저항 50.4%</div>
+                </div>
+                <div class="info-expand-layer">
+                    <div class="info-title-label">명륜 상세 정보</div>
+                    <div class="info-description">
+                        팀 유일: 장비자 명령 카드의 크리티컬 확률, 크리티컬 피해, 방어막, HP 회복, 광기, 힘이 11/14/17/20% 증가한다. 현재 영역이 "초차원"일 경우, 소멸 발동 시 110/140/170/200 은열쇠 에너지를 획득한다. 초차원 턴 진입 후, 이 턴 동안 온열쇠 효과가 2회 발동한다.
+                    </div>
+                </div>
+            </div>
 
-    <div class="card">
-        <img src="정신집중.png" alt="정신집중" class="card-img">
-        <div class="card-overlay">
-            <h3 class="title">정신집중</h3>
-            <p class="main-option">주옵션: 은열쇠 충전 10.8</p>
-            <p class="description">
-                <strong>팀 유일:</strong> 은열쇠 발동 후, 장비자는 9/11/13/15 광기를 획득한다.
-            </p>
-        </div>
-    </div>
+            <div class="myeongryun-card">
+                <div class="image-box">
+                    <img src="견딜 수 없는 자유.png" class="myeong-img" alt="견딜 수 없는 자유">
+                </div>
+                <div class="profile-desc">
+                    <div class="myeong-name-kr">견딜 수 없는 자유</div>
+                    <div class="myeong-main-option">주옵션: 피해 증폭 14.4%</div>
+                </div>
+                <div class="info-expand-layer">
+                    <div class="info-title-label">명륜 상세 정보</div>
+                    <div class="info-description">
+                        팀 유일: 손폐 상한이 2 증가하고, 다른 명륜이 제공하는 손폐 상한과 중첩되지 않는다. 장비자의 방어막 및 기본 피해가 9/11/13/15% 증가한다. 초차원 턴에 진입 시, 장비자가 35/50/65/80 광기를 획득한다. 소멸 발동시 모든 각성체의 임시 크리티컬 피해가 13/17/21/25% 증가한다. 이 효과는 3년의 쿨타임이 존재한다.
+                    </div>
+                </div>
+            </div>
 
-    <div class="card">
-        <img src="존재하지 않는 곳.png" alt="존재하지 않는 곳" class="card-img">
-        <div class="card-overlay">
-            <h3 class="title">존재하지 않는 곳</h3>
-            <p class="main-option">주옵션: 검은 인장 드롭률 5.4%</p>
-            <p class="description">
-                <strong>팀 유일:</strong> 탐색 시작 시 장비자의 "방어" 1장을 덱에 추가하고, 장비자의 '방어' 방어막이 22/28/34/40% 증가한다.
-            </p>
-        </div>
-    </div>
+            <div class="myeongryun-card">
+                <div class="image-box">
+                    <img src="정신집중.png" class="myeong-img" alt="정신집중">
+                </div>
+                <div class="profile-desc">
+                    <div class="myeong-name-kr">정신집중</div>
+                    <div class="myeong-main-option">주옵션: 은열쇠 충전 10.8</div>
+                </div>
+                <div class="info-expand-layer">
+                    <div class="info-title-label">명륜 상세 정보</div>
+                    <div class="info-description">
+                        팀 유일: 은열쇠 발동 후, 장비자는 9/11/13/15 광기를 획득한다.
+                    </div>
+                </div>
+            </div>
 
-    <div class="card">
-        <img src="소중한친구에게.png" alt="소중한 친구에게" class="card-img">
-        <div class="card-overlay">
-            <h3 class="title">소중한 친구에게</h3>
-            <p class="main-option">주옵션: 크리티컬 피해 10.8%</p>
-            <p class="description">
-                <strong>팀 유일:</strong> 장비자가 광기 폭발을 사용한 후, 이 턴 모든 아군의 크리티컬 확률이 13/17/21/25% 증가한다.
-            </p>
-        </div>
-    </div>
+            <div class="myeongryun-card">
+                <div class="image-box">
+                    <img src="존재하지 않는 곳.png" class="myeong-img" alt="존재하지 않는 곳">
+                </div>
+                <div class="profile-desc">
+                    <div class="myeong-name-kr">존재하지 않는 곳</div>
+                    <div class="myeong-main-option">주옵션: 검은 인장 드름을 5.4%</div>
+                </div>
+                <div class="info-expand-layer">
+                    <div class="info-title-label">명륜 상세 정보</div>
+                    <div class="info-description">
+                        팀 유일: 탐색 시작 시 장비자의 "방어' 1장을 덱에 추가하고, 장비자의 '방어' 방어막이 22/28/34/40% 증가한다.
+                    </div>
+                </div>
+            </div>
 
-    <div class="card">
-        <img src="모임의 순간.png" alt="모임의 순간" class="card-img">
-        <div class="card-overlay">
-            <h3 class="title">모임의 순간</h3>
-            <p class="main-option">주옵션: 은열쇠 충전 10.8</p>
-            <p class="description">
-                <strong>팀 유일:</strong> 장비자의 카드를 1장 사용할 때마다 20/30/40/50 은열쇠 에너지를 획득한다. 이 효과는 한 턴에 최대 3번 적용된다.
-            </p>
+            <div class="myeongryun-card">
+                <div class="image-box">
+                    <img src="소중한친구에게.png" class="myeong-img" alt="소중한 친구에게">
+                </div>
+                <div class="profile-desc">
+                    <div class="myeong-name-kr">소중한 친구에게</div>
+                    <div class="myeong-main-option">주옵션: 크리티컬 피해 10.8%</div>
+                </div>
+                <div class="info-expand-layer">
+                    <div class="info-title-label">명륜 상세 정보</div>
+                    <div class="info-description">
+                        팀 유일: 장비자가 광기 폭발을 사용한 후, 이 턴 모든 아군의 크리티컬 확률이 13/17/21/25% 증가한다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="myeongryun-card">
+                <div class="image-box">
+                    <img src="모임의 순간.png" class="myeong-img" alt="모임의 순간">
+                </div>
+                <div class="profile-desc">
+                    <div class="myeong-name-kr">모임의 순간</div>
+                    <div class="myeong-main-option">주옵션: 은열쇠 충전 10.8</div>
+                </div>
+                <div class="info-expand-layer">
+                    <div class="info-title-label">명륜 상세 정보</div>
+                    <div class="info-description">
+                        팀 유일: 장비자의 카드를 1장 사용할 때마다 20/30/40/50 은열쇠 에너지를 획득한다. 이 효과는 한 턴에 최대 3번 적용된다.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="back-home-container">
+            <button class="back-btn" onclick="window.location.href='index.html'"><span>메인으로 돌아가기</span></button>
         </div>
     </div>
-</div>
 
 </body>
 </html>
