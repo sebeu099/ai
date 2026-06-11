@@ -72,6 +72,11 @@
             pointer-events: none;
         }
 
+        /* 되돌아왔을 때 덜컥거림을 방지하기 위한 즉시 숨김 클래스 */
+        .hero-section.no-transition {
+            transition: none !important;
+        }
+
         /* 클릭 좌표 중심 일렁이는 물결(Ripple) 파동 디자인 */
         .ripple-effect {
             position: absolute;
@@ -135,6 +140,18 @@
         body.page-opened .main-content {
             opacity: 1;
             transform: translateY(0);
+        }
+        
+        /* 되돌아왔을 때 본문이 흐느적거리며 올라오지 않게 즉시 노출하는 클래스 */
+        body.page-opened-direct .main-content {
+            transition: none !important;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        body.page-opened-direct .top-banner-view {
+            transition: none !important;
+            opacity: 1;
+            visibility: visible;
         }
 
         /* 타이틀 섹션 (정보모음) */
@@ -462,6 +479,52 @@
         let fadeAnimationId = null;
         let pageOpened = false;
 
+        // [추가] 브라우저 백 히스토리(뒤로 가기)로 복귀했는지 확인하고 스크롤 위치 복원하는 생명주기 제어
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedState = sessionStorage.getItem('pageOpened');
+            const savedScrollY = sessionStorage.getItem('savedScrollPosition');
+
+            if (savedState === 'true') {
+                // 뒤로가기로 왔다면 초기 커버 연출을 건너뛰고 즉시 본문 개방
+                pageOpened = true;
+                heroSection.classList.add('no-transition', 'fade-out');
+                document.body.classList.add('page-opened', 'page-opened-direct');
+                
+                // 음악은 이미 열렸던 페이지이므로 처음부터 잔잔한 배경음(20%) 수준으로 재생 시작
+                targetVolume = 0.2;
+                
+                // 사용자가 화면을 건드리는 시점에 오디오 락을 완벽히 풀도록 이벤트 연동
+                const playOnActive = () => {
+                    bgm.play().then(() => {
+                        if (!fadeAnimationId) smoothVolumeFade();
+                    }).catch(() => {});
+                    window.removeEventListener('click', playOnActive);
+                    window.removeEventListener('wheel', playOnActive);
+                    window.removeEventListener('touchmove', playOnActive);
+                };
+                window.addEventListener('click', playOnActive);
+                window.addEventListener('wheel', playOnActive, { passive: true });
+                window.addEventListener('touchmove', playOnActive, { passive: true });
+
+                // 브라우저 렌더링 주기가 끝난 직후 이전 스크롤 위치로 순간 이동 처리
+                setTimeout(() => {
+                    if (savedScrollY) {
+                        window.scrollTo(0, parseInt(savedScrollY, 10));
+                    }
+                }, 50);
+            } else {
+                // 처음 진입했을 때는 정상적으로 볼륨 0인 상태 명시
+                bgm.volume = 0;
+            }
+        });
+
+        // 페이지를 떠나기 직전(하위 메뉴 클릭 등) 현재 스크롤 위치와 개방 상태를 캐싱 세션에 기록
+        window.addEventListener('scroll', function() {
+            if (pageOpened) {
+                sessionStorage.setItem('savedScrollPosition', window.scrollY);
+            }
+        });
+
         // 클릭 제어 핸들러 펑션
         function handleHeroClick(e) {
             if (pageOpened) return;
@@ -495,7 +558,10 @@
                 heroSection.classList.add('fade-out');
                 document.body.classList.add('page-opened');
                 
-                // [수정] 메인 화면 진입 후 3초(3000ms) 동안은 70% 볼륨 유지, 그 후 배경음 레벨(20%)로 다운
+                // 세션 스토리지에 페이지가 열렸음을 기록
+                sessionStorage.setItem('pageOpened', 'true');
+                
+                // 메인 화면 진입 후 3초(3000ms) 동안은 70% 볼륨 유지, 그 후 배경음 레벨(20%)로 다운
                 setTimeout(() => {
                     if (!userInteractedWithVolume) {
                         targetVolume = 0.2; 
@@ -528,11 +594,6 @@
 
             fadeAnimationId = requestAnimationFrame(smoothVolumeFade);
         }
-
-        // 스크롤 감지 볼륨 복귀 코드 차단 상태 유지
-        window.addEventListener('scroll', function() {
-            if (!pageOpened) return; 
-        });
 
         function changeVolume(val) {
             userInteractedWithVolume = true; 
