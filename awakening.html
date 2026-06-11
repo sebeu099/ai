@@ -71,12 +71,20 @@
         .tab-button.active[data-target="심해"] { border-color: #5aa9e6; box-shadow: 0 0 10px rgba(90, 169, 230, 0.3); }
         .tab-button.active[data-target="ALL"] { border-color: rgba(255, 255, 255, 0.6); }
 
+        /* [수정] 기본적으로 반응형 그리드를 유지하되 PC화면에서 4열 고정되도록 변경 */
         .awakener-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 280px));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             justify-content: center;
-            gap: 25px;
+            gap: 20px;
             transition: all 0.4s ease;
+        }
+
+        /* [수정] 데스크탑 PC 환경(화면 너비 1024px 이상)에서 무조건 4개 카드가 일렬로 배치되도록 설정 */
+        @media (min-width: 1024px) {
+            .awakener-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
 
         .awakener-card {
@@ -91,18 +99,23 @@
             width: 100%;
             opacity: 1;
             transform: scale(1);
+            /* [수정] 카드가 펼쳐질 때 하단 텍스트가 잘리지 않도록 max-height 애니메이션 기반 마련 */
+            max-height: 430px;
             transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
                         border-color 0.4s ease, 
                         box-shadow 0.4s ease,
                         opacity 0.3s ease,
-                        background-color 0.4s ease;
+                        background-color 0.4s ease,
+                        max-height 0.45s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
+        /* [수정] 마우스 호버 시 카드 자체의 max-height를 늘려 내부 요소(약재의 꿈)가 다 보이도록 조절 */
         .awakener-card:hover, .awakener-card.highlighted {
             background: #162023;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
             transform: translateY(-8px) scale(1.04);
             z-index: 5;
+            max-height: 700px;
         }
 
         .awakener-card[data-faction="초차원"]:hover { border-color: #a35ae6; }
@@ -122,7 +135,7 @@
         .portrait-box {
             position: relative;
             width: 100%;
-            height: 280px;
+            height: 240px; /* 4열 정렬에 맞추어 세로 크기를 살짝 밸런스 있게 조정 */
             background: #0d1214;
             overflow: hidden;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -182,18 +195,17 @@
         }
 
         .myeongryun-title-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem; /* 4열 배치를 위해 폰트 사이즈 소폭 최적화 */
             color: #8a999d;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             margin-bottom: 10px;
             text-align: left;
             border-left: 2px solid rgba(255,255,255,0.2);
             padding-left: 6px;
         }
-        .myeongryun-pair-box { display: flex; gap: 10px; }
+        .myeongryun-pair-box { display: flex; gap: 8px; }
         
-        /* [이동 링크 반영] 명륜 서브 카드 호버 시 피드백 향상 */
         .myeongryun-sub-card { 
             flex: 1; 
             background: #11181a; 
@@ -210,7 +222,7 @@
 
         .myeongryun-slot-frame {
             width: 100%; 
-            height: 90px; 
+            height: 80px; 
             background: #192326; 
             margin-bottom: 8px; 
             overflow: hidden; 
@@ -225,14 +237,13 @@
             height: 100%; 
             object-fit: cover; 
         }
-        .myeong-text-title { font-size: 0.85rem; color: #ccd7d9; font-weight: 500; line-height: 1.3; }
-        .myeong-rarity-tag { font-size: 0.7rem; display: inline-block; padding: 1px 4px; margin-top: 3px; background: rgba(255,255,255,0.04); color: #8a999d; }
+        .myeong-text-title { font-size: 0.8rem; color: #ccd7d9; font-weight: 500; line-height: 1.3; }
+        .myeong-rarity-tag { font-size: 0.65rem; display: inline-block; padding: 1px 4px; margin-top: 3px; background: rgba(255,255,255,0.04); color: #8a999d; }
 
         .back-home-container { text-align: center; margin-top: 40px; }
         .back-btn { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: #ccd7d9; padding: 12px 30px; cursor: pointer; letter-spacing: 1px; transition: all 0.25s; }
         .back-btn:hover { border-color: #ffffff; color: #ffffff; background: #11181a; }
         
-        /* 비밀계약 레이아웃 스타일 구조 */
         .secret-contract-box {
             width: 100%;
             display: flex;
@@ -242,7 +253,6 @@
             margin-top: auto;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
             background: rgba(0, 0, 0, 0.2);
-            /* [이동 링크 반영] 커서 상태 선언 */
             cursor: pointer;
             transition: background-color 0.2s;
         }
@@ -299,7 +309,7 @@
                     <div class="char-type-badge">방어형</div>
                 </div>
                 <div class="myeongryun-expand-layer">
-                    <div class="myeongryun-title-label">추천 명륜 매칭 (클릭 시 명륜 정보로 이동)</div>
+                    <div class="myeongryun-title-label">추천 명륜 매칭 (클릭 시 이동)</div>
                     <div class="myeongryun-pair-box">
                         <div class="myeongryun-sub-card" onclick="location.href='myeongryun.html'; event.stopPropagation();">
                             <div class="myeongryun-slot-frame"><img src="견딜 수 없는 자유.png" class="myeong-img" alt="견딜 수 없는 자유"></div>
@@ -330,7 +340,7 @@
                     <div class="char-type-badge">보조형</div>
                 </div>
                 <div class="myeongryun-expand-layer">
-                    <div class="myeongryun-title-label">추천 명륜 매칭 (클릭 시 명륜 정보로 이동)</div>
+                    <div class="myeongryun-title-label">추천 명륜 매칭 (클릭 시 이동)</div>
                     <div class="myeongryun-pair-box">
                         <div class="myeongryun-sub-card" onclick="location.href='myeongryun.html'; event.stopPropagation();">
                             <div class="myeongryun-slot-frame"><img src="자비로운양육.png" class="myeong-img" alt="자비로운 양육"></div>
@@ -361,7 +371,7 @@
                     <div class="char-type-badge">보조형</div>
                 </div>
                 <div class="myeongryun-expand-layer">
-                    <div class="myeongryun-title-label">추천 명륜 매칭 (클릭 시 명륜 정보로 이동)</div>
+                    <div class="myeongryun-title-label">추천 명륜 매칭 (클릭 시 이동)</div>
                     <div class="myeongryun-pair-box">
                         <div class="myeongryun-sub-card" onclick="location.href='myeongryun.html'; event.stopPropagation();">
                             <div class="myeongryun-slot-frame"><img src="감춰진 수레바퀴.png" class="myeong-img" alt="감춰진 수레바퀴"></div>
@@ -392,7 +402,7 @@
                     <div class="char-type-badge">보조형</div>
                 </div>
                 <div class="myeongryun-expand-layer">
-                    <div class="myeongryun-title-label">추천 명륜 매칭 (클릭 시 명륜 정보로 이동)</div>
+                    <div class="myeongryun-title-label">추천 명륜 매칭 (클릭 시 이동)</div>
                     <div class="myeongryun-pair-box">
                         <div class="myeongryun-sub-card" onclick="location.href='myeongryun.html'; event.stopPropagation();">
                             <div class="myeongryun-slot-frame"><img src="마지막시편.png" class="myeong-img" alt="마지막 시편"></div>
