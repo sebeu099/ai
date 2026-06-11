@@ -321,13 +321,13 @@
                         <p>현재 진행 중인 특별 소집 및 기간 한정 작전 정보 (클릭 시 이동)</p>
                     </div>
                 </div>
-                <div class="slide-item">
+                <div class="slide-item clickable" onclick="navigateToPage('event-detail-2')">
                     <div class="slide-placeholder">
                         <h3>게임 내 이벤트 Ⅱ</h3>
                         <p>테마 복각 상점 및 시즌 출석 보상 상세 안내</p>
                     </div>
                 </div>
-                <div class="slide-item">
+                <div class="slide-item clickable" onclick="navigateToPage('event-detail-3')">
                     <div class="slide-placeholder">
                         <h3>게임 내 이벤트 Ⅲ</h3>
                         <p>정기 점검 업데이트 안내 및 커뮤니티 전용 이벤트</p>
@@ -355,7 +355,7 @@
                 <div class="icon-deco"></div>
                 <span>비밀계약 정보</span>
             </div>
-            <div class="menu-item" onclick="onclick=navigateToPage('coupon-code')">
+            <div class="menu-item" onclick="navigateToPage('coupon-code')">
                 <div class="icon-deco"></div>
                 <span>교환코드</span>
             </div>
@@ -422,21 +422,27 @@
             autoSlider = setInterval(nextSlide, slideInterval);
         }
 
-        // [추가 구현] 하단 정보 버튼 클릭 시 하위 컴포넌트 페이지 리디렉션 핵심 라우터 함수
+        // 하단 정보 버튼 및 추가 배너 클릭 시 하위 컴포넌트 페이지 리디렉션 라우터 함수
         function navigateToPage(menuType) {
-            // 프로젝트 구상 단계에 따라 확장하기 편리하도록 구조 설계 처리를 마쳤습니다.
             switch (menuType) {
                 case 'awakening':
-                    window.location.href = 'awakening.html'; // 각성체 정보용 HTML 파일 매칭 자리
+                    window.location.href = 'awakening.html'; 
                     break;
                 case 'myeongryun':
-                    window.location.href = 'myeongryun.html'; // 명륜 정보용 HTML 파일 매칭 자리
+                    window.location.href = 'myeongryun.html'; 
                     break;
                 case 'secret-contract':
-                    window.location.href = 'secret_contract.html'; // 비밀계약 정보용 HTML 파일 매칭 자리
+                    window.location.href = 'secret_contract.html'; 
                     break;
                 case 'coupon-code':
-                    window.location.href = 'coupon_code.html'; // 교환코드용 HTML 파일 매칭 자리
+                    window.location.href = 'coupon_code.html'; 
+                    break;
+                // 배너 2, 3번 클릭 핸들러 추가 커스텀 처리 구역
+                case 'event-detail-2':
+                    window.location.href = 'event_detail_2.html';
+                    break;
+                case 'event-detail-3':
+                    window.location.href = 'event_detail_3.html';
                     break;
                 default:
                     console.log('연결 타겟이 매핑되지 않았습니다.');
