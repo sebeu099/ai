@@ -18,53 +18,71 @@
             overflow-x: hidden;
         }
 
-        /* 1. 초기 화면 (클릭 전까지 화면 전체를 고정 수호) */
+        /* 1. 초기 화면 (클릭 전까지 전체 화면을 완전히 덮어 고정) */
         .hero-section {
-            position: fixed; /* 스크롤 고정 */
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 100vw;
             height: 100vh;
             background: url(front.jpg) center/cover no-repeat;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 500; /* 콘텐츠보다 위에 배치 */
+            z-index: 9999; /* 최상단 레이어 배치로 클릭 가로채기 방지 */
             cursor: pointer;
-            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s;
+            overflow: hidden;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
         }
-        /* 클릭 유도 안내 텍스트 (원치 않으시면 삭제 가능) */
+        
+        /* 하단 그라데이션 마스크 처리 */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: transparent;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
+            pointer-events: none;
+        }
+
+        /* CLICK TO ENTER 안내 가이드 */
         .hero-section::after {
             content: 'CLICK TO ENTER';
             position: absolute;
             bottom: 15%;
-            color: rgba(227, 232, 233, 0.5);
+            color: rgba(227, 232, 233, 0.6);
             font-size: 0.9rem;
-            letter-spacing: 4px;
+            letter-spacing: 5px;
+            font-weight: 500;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
             animation: blink 2s infinite;
+            pointer-events: none;
+            z-index: 10000;
         }
         @keyframes blink {
             0%, 100% { opacity: 0.3; }
             50% { opacity: 1; }
         }
 
-        /* 클릭 후 첫 화면이 사라질 때 적용될 클래스 */
+        /* 클릭 액션 이후 페이드아웃 상태 클래스 */
         .hero-section.fade-out {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
 
-        /* [추가] 클릭 시 퍼져나갈 물결(Ripple) 스타일 */
+        /* [핵심 추가] 클릭 좌표 중심 일렁이는 물결(Ripple) 파동 디자인 */
         .ripple-effect {
             position: absolute;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(158, 177, 182, 0.4) 0%, rgba(25, 35, 38, 0) 70%);
-            border: 2px solid rgba(158, 177, 182, 0.2);
+            /* 인게임 분위기에 맞춘 신비로운 다크 청록빛 파동 그라데이션 */
+            background: radial-gradient(circle, rgba(158, 177, 182, 0.5) 0%, rgba(38, 55, 59, 0.2) 40%, rgba(25, 35, 38, 0) 70%);
+            border: 1px solid rgba(158, 177, 182, 0.25);
             pointer-events: none;
             transform: scale(0);
-            animation: ripple-animation 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
-            z-index: 600;
+            animation: ripple-animation 1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            z-index: 10001;
         }
         @keyframes ripple-animation {
             to {
@@ -73,7 +91,7 @@
             }
         }
 
-        /* 2. 상단 고정 배너 (첫 화면이 사라진 후 활성화) */
+        /* 2. 고정 상단 배너 (첫 화면 통과 전엔 숨김) */
         .top-banner-view {
             position: fixed;
             top: 0;
@@ -84,7 +102,7 @@
             z-index: 100;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.6s ease, visibility 0.6s ease;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
             border-bottom: 2px solid rgba(255,255,255,0.05);
         }
@@ -98,24 +116,22 @@
             background: linear-gradient(to bottom, rgba(25, 35, 38, 0) 0%, #192326 100%);
         }
 
-        /* 페이지가 완전히 열렸을 때 상단 배너 표시 */
         body.page-opened .top-banner-view {
             opacity: 1;
             visibility: visible;
         }
 
-        /* 메인 콘텐츠 영역 (첫 화면 뒤에 대기 중인 본문) */
+        /* 메인 콘텐츠 영역 (첫 화면 뒤에서 대기하다가 부드럽게 상승 등장) */
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
             padding: 60px 20px;
             position: relative;
             z-index: 10;
-            /* 배너에 가려지지 않도록 미리 여백 확보 및 부드러운 등장 연출 */
             margin-top: 180px;
             opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 1s ease 0.3s, transform 1s cubic-bezier(0.25, 1, 0.5, 1) 0.3s;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease 0.2s, transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.2s;
         }
         body.page-opened .main-content {
             opacity: 1;
@@ -169,12 +185,10 @@
             position: relative;
         }
 
-        /* 실제 스와이프될 이미지 파일명 등록 구역 */
         .slide-item:nth-child(1) { background: url('콜라보 배너 사이트.webp') center/cover no-repeat; }
         .slide-item:nth-child(2) { background: url('콜라보 이벤트 스토리.png') center/cover no-repeat; }
         .slide-item:nth-child(3) { background: url('콜라보 이벤트 보상 몽록.webp') center/cover no-repeat; }
         
-        /* 이미지 로드 전 또는 미등록 상태 시 연출될 다크 가이드 스킨 */
         .slide-placeholder {
             width: 100%;
             height: 100%;
@@ -186,21 +200,7 @@
             color: #8a999d;
         }
         
-        .slide-item.clickable {
-            cursor: pointer;
-        }
-        .slide-item.clickable:hover .slide-placeholder h3 {
-            color: #ffffff;
-            text-decoration: underline;
-        }
-
-        .slide-placeholder h3 {
-            font-size: 1.5rem;
-            color: #ccd7d9;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-            transition: color 0.2s;
-        }
+        .slide-item.clickable { cursor: pointer; }
 
         /* PC용 내비게이션 좌우 제어 화살표 디자인 */
         .slider-arrow {
@@ -235,9 +235,7 @@
             background: #162023;
             border-color: rgba(255, 255, 255, 0.4);
         }
-        .slider-arrow:hover .slider-arrow-inner {
-            border-color: #ffffff;
-        }
+        .slider-arrow:hover .slider-arrow-inner { border-color: #ffffff; }
 
         @media (max-width: 768px) {
             .slider-arrow { display: none; }
@@ -318,9 +316,7 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
             transition: color 0.3s;
         }
-        .menu-item:hover span {
-            color: #ffffff;
-        }
+        .menu-item:hover span { color: #ffffff; }
 
         .menu-item .icon-deco {
             width: 32px;
@@ -371,9 +367,7 @@
             width: 24px;
             height: 24px;
         }
-        .mute-btn:hover {
-            color: #ffffff;
-        }
+        .mute-btn:hover { color: #ffffff; }
         .volume-slider {
             -webkit-appearance: none;
             appearance: none;
@@ -469,22 +463,20 @@
         let fadeAnimationId = null;
         let pageOpened = false;
 
-        // [수정] 초기 화면 클릭 시 물결 이펙트 및 음악 재생, 페이지 전환 통합 제어
+        // 클릭 제어 핸들러 펑션
         function handleHeroClick(e) {
             if (pageOpened) return;
 
-            // 1. 클릭 좌표 구하기 및 물결(Ripple) 소환
-            const rect = heroSection.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
+            // 1. 물결 엘리먼트 생성 및 절대 좌표 연산 부여
             const ripple = document.createElement('span');
             ripple.classList.add('ripple-effect');
-            ripple.style.left = `${x}px`;
-            ripple.style.top = `${y}px`;
             
-            // 물결 크기 설정 (화면을 가득 채울 수 있는 크기)
-            const size = Math.max(window.innerWidth, window.innerHeight);
+            // fixed 속성에 맞춰 뷰포트 기준 좌표 대입
+            ripple.style.left = `${e.clientX}px`;
+            ripple.style.top = `${e.clientY}px`;
+            
+            // 화면 대각선 최대 크기 커버 수치 지정
+            const size = Math.max(window.innerWidth, window.innerHeight) * 2;
             ripple.style.width = `${size}px`;
             ripple.style.height = `${size}px`;
             ripple.style.marginLeft = `${-size/2}px`;
@@ -492,20 +484,23 @@
 
             heroSection.appendChild(ripple);
 
-            // 2. 음악 즉시 재생 시도 (사용자 명시적 클릭이므로 백퍼센트 풀림)
-            targetVolume = 0.7; // 메인 볼륨 타겟
+            // 2. 오디오 볼륨 락 해제 및 즉시 플레이 가동
+            targetVolume = 0.7; 
             bgm.play().then(() => {
                 if (!fadeAnimationId) smoothVolumeFade(); 
-            }).catch(() => {});
+            }).catch(() => {
+                // 브라우저가 최후의 수단으로 막았을 경우 에러 처리 우회
+                if (!fadeAnimationId) smoothVolumeFade();
+            });
 
-            // 3. 물결이 일렁이며 퍼지는 타이밍에 맞춰 첫 화면 페이드아웃 및 본문 활성화
+            // 3. 물결 파동 확산 타이밍에 맞춘 스무스 화면 체인지 체인징 작동 (0.45초 딜레이)
             setTimeout(() => {
                 pageOpened = true;
                 heroSection.classList.add('fade-out');
                 document.body.classList.add('page-opened');
-            }, 400); // 0.4초 뒤 전환 시작
+            }, 450);
 
-            // 애니메이션이 끝나면 물결 엘리먼트 제거
+            // 애니메이션 파기 데이터 클렌징
             setTimeout(() => {
                 ripple.remove();
             }, 1200);
@@ -530,9 +525,9 @@
             fadeAnimationId = requestAnimationFrame(smoothVolumeFade);
         }
 
-        // 페이지가 열린 후 하단 본문에서 스크롤을 내릴 때만 음악이 잔잔해지도록 제어
+        // 본문 스크롤 감지 볼륨 가이드 제어 루틴
         window.addEventListener('scroll', function() {
-            if (!pageOpened) return; // 첫 화면 상태에서는 연산 방지
+            if (!pageOpened) return; 
 
             if (window.scrollY > 200) {
                 if (!userInteractedWithVolume) targetVolume = 0.2; 
@@ -619,26 +614,13 @@
 
         function navigateToPage(menuType) {
             switch (menuType) {
-                case 'awakening':
-                    window.location.href = 'awakening.html'; 
-                    break;
-                case 'myeongryun':
-                    window.location.href = 'myeongryun.html'; 
-                    break;
-                case 'secret-contract':
-                    window.location.href = 'secret_contract.html'; 
-                    break;
-                case 'coupon-code':
-                    window.location.href = 'coupon_code.html'; 
-                    break;
-                case 'event-detail-2':
-                    window.location.href = 'event_detail_2.html';
-                    break;
-                case 'event-detail-3':
-                    window.location.href = 'event_detail_3.html';
-                    break;
-                default:
-                    console.log('연결 타겟이 매핑되지 않았습니다.');
+                case 'awakening': window.location.href = 'awakening.html'; break;
+                case 'myeongryun': window.location.href = 'myeongryun.html'; break;
+                case 'secret-contract': window.location.href = 'secret_contract.html'; break;
+                case 'coupon-code': window.location.href = 'coupon_code.html'; break;
+                case 'event-detail-2': window.location.href = 'event_detail_2.html'; break;
+                case 'event-detail-3': window.location.href = 'event_detail_3.html'; break;
+                default: console.log('연결 타겟이 매핑되지 않았습니다.');
             }
         }
     </script>
