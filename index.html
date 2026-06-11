@@ -32,7 +32,6 @@
             z-index: 9999; 
             cursor: pointer;
             overflow: hidden;
-            /* [수정] 화면 전환이 1~2초 사이(1.5초) 동안 서서히 일어나도록 속도 감속 */
             transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.5s;
         }
         
@@ -81,7 +80,6 @@
             border: 1px solid rgba(158, 177, 182, 0.25);
             pointer-events: none;
             transform: scale(0);
-            /* 물결이 퍼지는 시간도 살짝 늘려 공간감을 줌 */
             animation: ripple-animation 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
             z-index: 10001;
         }
@@ -132,7 +130,6 @@
             margin-top: 180px;
             opacity: 0;
             transform: translateY(40px);
-            /* 본문 콘텐츠도 화면 전환 속도에 맞춰 부드럽게 등장하도록 딜레이 조정 */
             transition: opacity 1.2s ease 0.4s, transform 1.2s cubic-bezier(0.25, 1, 0.5, 1) 0.4s;
         }
         body.page-opened .main-content {
@@ -464,7 +461,6 @@
         let targetVolume = 0.0; 
         let fadeAnimationId = null;
         let pageOpened = false;
-        let isScrollingDown = false; // 현재 스크롤이 내려가 있는 상태인지 체크
 
         // 클릭 제어 핸들러 펑션
         function handleHeroClick(e) {
@@ -485,7 +481,7 @@
 
             heroSection.appendChild(ripple);
 
-            // 2. 오디오 볼륨 락 해제 및 즉시 플레이 (초기 볼륨 70% 지정)
+            // 2. 오디오 볼륨락 해제 및 즉시 플레이 (초기 볼륨 70% 지정)
             targetVolume = 0.7; 
             bgm.play().then(() => {
                 if (!fadeAnimationId) smoothVolumeFade(); 
@@ -493,19 +489,18 @@
                 if (!fadeAnimationId) smoothVolumeFade();
             });
 
-            // 3. 서서히 웅장하게 화면 체인지 작동 (0.45초 뒤 커버 페이드아웃 처리 시작)
+            // 3. 서서히 웅장하게 화면 체인지 작동
             setTimeout(() => {
                 pageOpened = true;
                 heroSection.classList.add('fade-out');
                 document.body.classList.add('page-opened');
                 
-                // [핵심 추가] 클릭 후 진입한 메인 화면에서 2초(2000ms) 동안은 70% 볼륨을 묵직하게 유지하다가, 
-                // 그 이후에 자동으로 잔잔한 볼륨(20%)으로 서서히 줄어들게 타이머를 세팅합니다.
+                // [수정] 메인 화면 진입 후 3초(3000ms) 동안은 70% 볼륨 유지, 그 후 배경음 레벨(20%)로 다운
                 setTimeout(() => {
-                    if (!userInteractedWithVolume && !isScrollingDown) {
-                        targetVolume = 0.2; // 1~3초(2초) 뒤에 부드럽게 감소 시작
+                    if (!userInteractedWithVolume) {
+                        targetVolume = 0.2; 
                     }
-                }, 2000);
+                }, 3000);
 
             }, 450);
 
@@ -523,7 +518,6 @@
             }
 
             const diff = targetVolume - bgm.volume;
-            // [수정] 볼륨 변환 속도를 살짝 늦춰서(0.05 -> 0.03) 페이드 아웃이 훨씬 스르륵 일어나도록 변경
             if (Math.abs(diff) > 0.005) {
                 bgm.volume += diff * 0.03; 
                 volumeSlider.value = bgm.volume;
@@ -535,18 +529,9 @@
             fadeAnimationId = requestAnimationFrame(smoothVolumeFade);
         }
 
-        // 본문 스크롤 감지 볼륨 가이드 제어 루틴
+        // 스크롤 감지 볼륨 복귀 코드 차단 상태 유지
         window.addEventListener('scroll', function() {
             if (!pageOpened) return; 
-
-            if (window.scrollY > 200) {
-                isScrollingDown = true;
-                if (!userInteractedWithVolume) targetVolume = 0.2; 
-            } else {
-                isScrollingDown = false;
-                // 스크롤을 다시 맨 위로 올리면 원본 음량(70%)으로 복귀
-                if (!userInteractedWithVolume) targetVolume = 0.7; 
-            }
         });
 
         function changeVolume(val) {
