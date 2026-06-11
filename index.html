@@ -131,9 +131,9 @@
         }
 
         /* 실제 스와이프될 이미지 파일명 등록 구역 */
-        .slide-item:nth-child(1) { background: url('event1.jpg') center/cover no-repeat; }
-        .slide-item:nth-child(2) { background: url('event2.jpg') center/cover no-repeat; }
-        .slide-item:nth-child(3) { background: url('event3.jpg') center/cover no-repeat; }
+        .slide-item:nth-child(1) { background: url('콜라보 배너 사이트.webp') center/cover no-repeat; }
+        .slide-item:nth-child(2) { background: url('콜라보 이벤트 스토리.png') center/cover no-repeat; }
+        .slide-item:nth-child(3) { background: url('콜라보 이벤트 보상 몽록.webp') center/cover no-repeat; }
         
         /* 이미지 로드 전 또는 미등록 상태 시 연출될 다크 가이드 스킨 */
         .slide-placeholder {
@@ -315,24 +315,9 @@
             <div class="slider-arrow arrow-right" onclick="nextSlide()"><div class="slider-arrow-inner"></div></div>
 
             <div class="slider-wrapper" id="sliderWrapper">
-                <div class="slide-item clickable" onclick="window.open('https://www.bokyakuzenya.com/sp', '_blank')">
-                    <div class="slide-placeholder">
-                        <h3>게임 내 이벤트 Ⅰ</h3>
-                        <p>현재 진행 중인 특별 소집 및 기간 한정 작전 정보 (클릭 시 이동)</p>
-                    </div>
-                </div>
-                <div class="slide-item clickable" onclick="navigateToPage('event-detail-2')">
-                    <div class="slide-placeholder">
-                        <h3>게임 내 이벤트 Ⅱ</h3>
-                        <p>테마 복각 상점 및 시즌 출석 보상 상세 안내</p>
-                    </div>
-                </div>
-                <div class="slide-item clickable" onclick="navigateToPage('event-detail-3')">
-                    <div class="slide-placeholder">
-                        <h3>게임 내 이벤트 Ⅲ</h3>
-                        <p>정기 점검 업데이트 안내 및 커뮤니티 전용 이벤트</p>
-                    </div>
-                </div>
+                <div class="slide-item clickable" onclick="window.open('https://www.bokyakuzenya.com/sp', '_blank')"></div>
+                <div class="slide-item clickable" onclick="navigateToPage('event-detail-2')"></div>
+                <div class="slide-item clickable" onclick="navigateToPage('event-detail-3')"></div>
             </div>
             
             <div class="slider-dots" id="sliderDots">
