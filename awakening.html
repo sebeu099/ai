@@ -42,6 +42,7 @@
             justify-content: center;
             gap: 12px;
             margin-bottom: 40px;
+            flex-wrap: wrap; /* 모바일에서 탭 버튼이 넘칠 경우 자연스럽게 줄바꿈 */
         }
         .tab-button {
             background: #11181a;
@@ -71,16 +72,58 @@
         .tab-button.active[data-target="심해"] { border-color: #5aa9e6; box-shadow: 0 0 10px rgba(90, 169, 230, 0.3); }
         .tab-button.active[data-target="ALL"] { border-color: rgba(255, 255, 255, 0.6); }
 
-        /* [수정] 기본적으로 반응형 그리드를 유지하되 PC화면에서 4열 고정되도록 변경 */
+        /* 기본 그리드 설정 (기본적으로 반응형) */
         .awakener-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             transition: all 0.4s ease;
         }
 
-        /* [수정] 데스크탑 PC 환경(화면 너비 1024px 이상)에서 무조건 4개 카드가 일렬로 배치되도록 설정 */
+        /* [추가] 모바일 환경 (스마트폰 세로 모드 - 480px 이하) - 2열 고정 및 비율 최적화 */
+        @media (max-width: 480px) {
+            .main-content { padding: 20px 10px; }
+            .section-title { font-size: 1.4rem; margin-bottom: 20px; }
+            .tab-container { gap: 6px; margin-bottom: 25px; }
+            .tab-button { padding: 8px 16px; font-size: 0.85rem; }
+            
+            .awakener-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 10px; 
+            }
+            .awakener-card { max-height: 360px !important; } /* 기본 높이 축소 */
+            .awakener-card:hover, .awakener-card.highlighted { max-height: 600px !important; }
+            .portrait-box { height: 160px; } /* 모바일에서 캐릭터 이미지 영역 높이 조정 */
+            .profile-desc { padding: 12px; }
+            .char-name-kr { font-size: 1.1rem; }
+            .char-name-en { font-size: 0.75rem; margin-bottom: 6px; }
+            .char-type-badge { font-size: 0.75rem; padding: 2px 8px; }
+            
+            .myeongryun-expand-layer { padding: 0 8px; }
+            .awakener-card:hover .myeongryun-expand-layer,
+            .awakener-card.highlighted .myeongryun-expand-layer { padding: 10px 8px; max-height: 240px; }
+            .myeongryun-title-label { font-size: 0.65rem; margin-bottom: 6px; }
+            .myeongryun-pair-box { gap: 5px; }
+            .myeongryun-sub-card { padding: 6px 3px; }
+            .myeongryun-slot-frame { height: 50px; margin-bottom: 4px; }
+            .myeong-text-title { font-size: 0.7rem; }
+            .myeong-rarity-tag { font-size: 0.6rem; }
+            
+            .secret-contract-box { padding: 10px 5px; }
+            .secret-contract-title { font-size: 0.7rem; margin-bottom: 4px; }
+        }
+
+        /* [추가] 태블릿 및 스마트폰 가로 모드 (481px ~ 1023px) - 3열 배치 */
+        @media (min-width: 481px) and (max-width: 1023px) {
+            .awakener-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+            .portrait-box { height: 200px; }
+        }
+
+        /* 데스크탑 PC 환경 (1024px 이상) - 4열 고정 */
         @media (min-width: 1024px) {
             .awakener-grid {
                 grid-template-columns: repeat(4, 1fr);
@@ -99,7 +142,6 @@
             width: 100%;
             opacity: 1;
             transform: scale(1);
-            /* [수정] 카드가 펼쳐질 때 하단 텍스트가 잘리지 않도록 max-height 애니메이션 기반 마련 */
             max-height: 430px;
             transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
                         border-color 0.4s ease, 
@@ -109,7 +151,6 @@
                         max-height 0.45s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        /* [수정] 마우스 호버 시 카드 자체의 max-height를 늘려 내부 요소(약재의 꿈)가 다 보이도록 조절 */
         .awakener-card:hover, .awakener-card.highlighted {
             background: #162023;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
@@ -135,7 +176,7 @@
         .portrait-box {
             position: relative;
             width: 100%;
-            height: 240px; /* 4열 정렬에 맞추어 세로 크기를 살짝 밸런스 있게 조정 */
+            height: 240px; 
             background: #0d1214;
             overflow: hidden;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -195,7 +236,7 @@
         }
 
         .myeongryun-title-label {
-            font-size: 0.75rem; /* 4열 배치를 위해 폰트 사이즈 소폭 최적화 */
+            font-size: 0.75rem;
             color: #8a999d;
             text-transform: uppercase;
             letter-spacing: 0.5px;
