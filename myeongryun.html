@@ -19,7 +19,7 @@
         }
 
         .main-content {
-            max-width: 1200px;
+            max-width: 1400px; /* 가로 플로팅 공간 확보를 위해 전체 너비 확장 */
             margin: 0 auto;
             padding: 40px 20px;
             position: relative;
@@ -32,48 +32,68 @@
             letter-spacing: 3px;
             color: #9eb1b6;
             text-transform: uppercase;
-            margin-bottom: 25px;
+            margin-bottom: 35px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             padding-bottom: 15px;
         }
 
-        /* 각성체 정보 탭의 그리드 모션 시스템 그대로 이식 */
-        .myeongryun-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 280px));
-            justify-content: center;
-            gap: 25px;
-            transition: all 0.4s ease;
+        /* 등급별 서브 타이틀 디자인 */
+        .grade-title {
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            margin: 40px 0 20px 0;
+            padding-left: 10px;
+            font-weight: 700;
+        }
+        .grade-title.ssr {
+            color: #ffd700;
+            border-left: 4px solid #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+        .grade-title.sr {
+            color: #b19ffb;
+            border-left: 4px solid #b19ffb;
+            text-shadow: 0 0 10px rgba(177, 159, 251, 0.3);
         }
 
-        /* 각성체 카드의 기본 모션 인터랙션 이식 */
+        /* 그리드 배치 시스템 */
+        .myeongryun-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            justify-content: center;
+            gap: 30px;
+            transition: all 0.4s ease;
+            margin-bottom: 20px;
+        }
+
+        /* 명륜 카드 기본 스타일 및 가로 확장 준비 */
         .myeongryun-card {
             position: relative;
             background: #11181a;
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 0;
             cursor: pointer;
-            overflow: hidden;
+            overflow: visible; /* 가로 플로팅 레이어가 카드 밖으로 나오도록 설정 */
             display: flex;
             flex-direction: column;
             width: 100%;
-            opacity: 1;
-            transform: scale(1);
             transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
                         border-color 0.4s ease, 
-                        box-shadow 0.4s ease,
-                        opacity 0.3s ease,
-                        background-color 0.4s ease;
+                        box-shadow 0.4s ease;
         }
 
-        /* 호버 시 위로 뜨며 그림자, 스케일이 커지는 시그니처 모션 */
+        /* SSR / SR 등급별 테두리 독자 색상 구현 */
+        .myeongryun-card.ssr-card { border-color: rgba(255, 215, 0, 0.2); }
+        .myeongryun-card.sr-card { border-color: rgba(177, 159, 251, 0.2); }
+
         .myeongryun-card:hover {
             background: #162023;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
-            transform: translateY(-8px) scale(1.04);
-            border-color: rgba(255, 255, 255, 0.4);
-            z-index: 5;
+            transform: translateY(-5px);
+            z-index: 99; /* 호버 시 플로팅이 다른 카드를 덮도록 우선순위 최상위 선점 */
         }
+        .myeongryun-card.ssr-card:hover { border-color: rgba(255, 215, 0, 0.6); }
+        .myeongryun-card.sr-card:hover { border-color: rgba(177, 159, 251, 0.6); }
 
         .myeongryun-card::before {
             content: '';
@@ -84,7 +104,7 @@
             z-index: 4;
         }
 
-        /* 이미지 박스 및 스케일 모션 */
+        /* 이미지 박스 및 호버 스케일 기믹 */
         .image-box {
             position: relative;
             width: 100%;
@@ -111,44 +131,94 @@
             text-align: center;
         }
         
-        /* 요구사항: 제목은 노란색 텍스트 처리 */
+        /* 등급별 텍스트 색상 매칭 */
+        .ssr-card .myeong-name-kr { color: #ffd700; text-shadow: 0 0 6px rgba(255,215,0,0.2); }
+        .sr-card .myeong-name-kr { color: #b19ffb; text-shadow: 0 0 6px rgba(177,159,251,0.2); }
+        
         .myeong-name-kr { 
             font-size: 1.3rem; 
             font-weight: 700; 
-            color: #ffd700; 
             letter-spacing: 1px; 
-            margin-bottom: 4px; 
+            margin-bottom: 6px; 
         }
         
-        /* 요구사항: 주옵션은 노란색 텍스트 처리 */
         .myeong-main-option { 
             font-size: 0.9rem; 
-            color: #ffd700; 
+            color: #e3e8e9; 
             letter-spacing: 0.5px; 
             background: rgba(255, 255, 255, 0.04); 
             padding: 4px 12px; 
             display: inline-flex;
             align-items: center;
             margin-top: 5px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
+        .ssr-card .myeong-main-option { color: #ffd700; background: rgba(255, 215, 0, 0.03); }
+        .sr-card .myeong-main-option { color: #b19ffb; background: rgba(177, 159, 251, 0.03); }
 
-        /* 공유해주신 코드의 핵심 [반투명 하단 확장 설명 레이어] 메커니즘 적용 */
+        /* [핵심 시스템 변형] 우측 가로 확장 슬라이딩 반투명 레이어 */
         .info-expand-layer {
-            max-height: 0;
+            position: absolute;
+            top: -1px;
+            left: 100%; /* 부모 카드의 완전히 우측 끝 선에서 시작 */
+            width: 320px; /* 가로 확장 폭 고정 */
+            height: calc(100% + 2px); /* 부모 테두리 매칭 정렬 */
+            background: rgba(10, 15, 16, 0.96); 
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            box-shadow: 15px 0 30px rgba(0, 0, 0, 0.5);
+            
+            /* 가로 제어를 위한 초기화 */
+            max-width: 0;
             opacity: 0;
             overflow: hidden;
-            transition: max-height 0.45s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
-            padding: 0 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0);
-            background: rgba(10, 15, 16, 0.95); /* 요구사항: 반투명한 검은색 카드 느낌 강화 */
+            white-space: normal;
+            pointer-events: none;
+            
+            /* 부드러운 가로 전개 애니메이션 가동 */
+            transition: max-width 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+                        opacity 0.3s ease,
+                        border-color 0.4s ease;
         }
 
-        /* 호버 시 부드럽게 미끄러지듯 노출되는 텍스트 공간 확장 모션 */
+        /* 호버 시 우측(가로)으로 부드럽게 밀려나오며 정보 전개 */
         .myeongryun-card:hover .info-expand-layer {
-            max-height: 500px; /* 텍스트 양을 고려하여 안전하게 확장 높이 확보 */
+            max-width: 320px;
             opacity: 1;
-            padding: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            pointer-events: auto;
+        }
+        .myeongryun-card.ssr-card:hover .info-expand-layer { border-color: rgba(255, 215, 0, 0.4); border-left-color: rgba(255,255,255,0.1); }
+        .myeongryun-card.sr-card:hover .info-expand-layer { border-color: rgba(177, 159, 251, 0.4); border-left-color: rgba(255,255,255,0.1); }
+
+        /* 화면 우측 끝 배치 카드의 플로팅이 브라우저 창 밖으로 이탈하는 현상 자동 제어(반대 방향 전환) */
+        @media (min-width: 1025px) {
+            .myeongryun-grid .myeongryun-card:nth-child(3n) .info-expand-layer,
+            .myeongryun-grid .myeongryun-card:last-child .info-expand-layer {
+                left: auto;
+                right: 100%;
+                box-shadow: -15px 0 30px rgba(0, 0, 0, 0.5);
+            }
+        }
+        
+        /* 모바일 모드 대응: 화면이 좁을 때는 자연스럽게 하단으로 출력되도록 가로 시스템 임시 해제 */
+        @media (max-width: 768px) {
+            .myeongryun-card { overflow: hidden; }
+            .info-expand-layer {
+                position: static;
+                width: 100%;
+                max-height: 0;
+                max-width: none !important;
+                opacity: 0;
+                transition: max-height 0.4s ease, opacity 0.3s ease;
+                border: none !important;
+                border-top: 1px solid rgba(255,255,255,0.05) !important;
+            }
+            .myeongryun-card:hover .info-expand-layer {
+                max-height: 500px;
+                opacity: 1;
+            }
         }
 
         .info-title-label {
@@ -156,13 +226,14 @@
             color: #8a999d;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             text-align: left;
-            border-left: 2px solid rgba(255,255,255,0.2);
+            border-left: 2px solid rgba(255,255,255,0.3);
             padding-left: 6px;
         }
+        .ssr-card .info-title-label { color: #ffd700; border-left-color: #ffd700; }
+        .sr-card .info-title-label { color: #b19ffb; border-left-color: #b19ffb; }
 
-        /* 요구사항: 설명은 흰색 텍스트 처리 */
         .info-description {
             font-size: 0.85rem;
             color: #ffffff;
@@ -172,7 +243,7 @@
         }
 
         /* 하단 메인 이동 버튼 세션 모션 매칭 */
-        .back-home-container { text-align: center; margin-top: 40px; }
+        .back-home-container { text-align: center; margin-top: 50px; }
         .back-btn { 
             background: transparent; 
             border: 1px solid rgba(255,255,255,0.15); 
@@ -195,9 +266,10 @@
     <div class="main-content">
         <h2 class="section-title">명륜 정보</h2>
 
+        <div class="grade-title ssr">SSR GRADE</div>
         <div class="myeongryun-grid">
             
-            <div class="myeongryun-card">
+            <div class="myeongryun-card ssr-card">
                 <div class="image-box">
                     <img src="감춰진 수레바퀴.png" class="myeong-img" alt="감춰진 수레바퀴">
                 </div>
@@ -213,7 +285,7 @@
                 </div>
             </div>
 
-            <div class="myeongryun-card">
+            <div class="myeongryun-card ssr-card">
                 <div class="image-box">
                     <img src="자비로운양육.png" class="myeong-img" alt="자비로운 양육">
                 </div>
@@ -229,7 +301,7 @@
                 </div>
             </div>
 
-            <div class="myeongryun-card">
+            <div class="myeongryun-card ssr-card">
                 <div class="image-box">
                     <img src="마지막시편.png" class="myeong-img" alt="마지막 시편">
                 </div>
@@ -245,7 +317,7 @@
                 </div>
             </div>
 
-            <div class="myeongryun-card">
+            <div class="myeongryun-card ssr-card">
                 <div class="image-box">
                     <img src="견딜 수 없는 자유.png" class="myeong-img" alt="견딜 수 없는 자유">
                 </div>
@@ -261,7 +333,12 @@
                 </div>
             </div>
 
-            <div class="myeongryun-card">
+        </div>
+
+        <div class="grade-title sr">SR GRADE</div>
+        <div class="myeongryun-grid">
+            
+            <div class="myeongryun-card sr-card">
                 <div class="image-box">
                     <img src="정신집중.png" class="myeong-img" alt="정신집중">
                 </div>
@@ -277,7 +354,7 @@
                 </div>
             </div>
 
-            <div class="myeongryun-card">
+            <div class="myeongryun-card sr-card">
                 <div class="image-box">
                     <img src="존재하지 않는 곳.png" class="myeong-img" alt="존재하지 않는 곳">
                 </div>
@@ -293,7 +370,7 @@
                 </div>
             </div>
 
-            <div class="myeongryun-card">
+            <div class="myeongryun-card sr-card">
                 <div class="image-box">
                     <img src="소중한친구에게.png" class="myeong-img" alt="소중한 친구에게">
                 </div>
@@ -309,7 +386,7 @@
                 </div>
             </div>
 
-            <div class="myeongryun-card">
+            <div class="myeongryun-card sr-card">
                 <div class="image-box">
                     <img src="모임의 순간.png" class="myeong-img" alt="모임의 순간">
                 </div>
