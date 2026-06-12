@@ -25,7 +25,8 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: url(front.jpg) center/cover no-repeat;
+            /* background 대신 내부 video 태그로 대체되므로 배경색만 지정 */
+            background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -33,6 +34,19 @@
             cursor: pointer;
             overflow: hidden;
             transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.5s;
+        }
+        
+        /* 배경 동영상 스타일링 */
+        .hero-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: translate(-50%, -50%);
+            pointer-events: none; /* 비디오가 클릭을 방해하지 않도록 설정 */
+            z-index: 1;
         }
         
         /* 하단 그라데이션 마스크 처리 */
@@ -44,6 +58,7 @@
             mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
             -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
             pointer-events: none;
+            z-index: 2; /* 동영상 위로 올림 */
         }
 
         /* CLICK TO ENTER 안내 가이드 */
@@ -287,7 +302,7 @@
         }
 
         /* ========================================================
-           3. 버튼 디자인 레이아웃 (남은 4개 필수 정보 그리드)
+            3. 버튼 디자인 레이아웃 (남은 4개 필수 정보 그리드)
            ======================================================== */
         .menu-grid {
             display: grid;
@@ -414,7 +429,10 @@
 </head>
 <body>
 
-    <div class="hero-section" id="heroSection" onclick="handleHeroClick(event)"></div>
+    <!-- 초기 화면: front.jpg 대신 front.webm 동영상이 재생되도록 내부에 video 태그 삽입 -->
+    <div class="hero-section" id="heroSection" onclick="handleHeroClick(event)">
+        <video class="hero-video" src="front.webm" autoplay loop muted playsinline></video>
+    </div>
 
     <audio id="bgm" src="사야의 노래.mp3" loop></audio>
 
