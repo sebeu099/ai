@@ -19,7 +19,7 @@
         }
 
         .main-content {
-            max-width: 1400px; /* 가로 플로팅 공간 확보를 위해 전체 너비 확장 */
+            max-width: 1600px; /* 플로팅 레이어 확장을 고려해 전체 너비 상향 */
             margin: 0 auto;
             padding: 40px 20px;
             position: relative;
@@ -28,7 +28,7 @@
 
         .section-title {
             text-align: center;
-            font-size: 1.8rem;
+            font-size: calc(1.8rem + 4px); /* 텍스트 크기 증가 */
             letter-spacing: 3px;
             color: #9eb1b6;
             text-transform: uppercase;
@@ -39,7 +39,7 @@
 
         /* 등급별 서브 타이틀 디자인 */
         .grade-title {
-            font-size: 1.4rem;
+            font-size: calc(1.4rem + 4px); /* 텍스트 크기 증가 */
             letter-spacing: 2px;
             margin: 40px 0 20px 0;
             padding-left: 10px;
@@ -66,7 +66,7 @@
             margin-bottom: 20px;
         }
 
-        /* 명륜 카드 기본 스타일 및 가로 확장 준비 */
+        /* 명륜 카드 기본 스타일 */
         .myeongryun-card {
             position: relative;
             background: #11181a;
@@ -104,11 +104,12 @@
             z-index: 4;
         }
 
-        /* 이미지 박스 및 호버 스케일 기믹 */
+        /* 이미지 박스 1:2 종횡비 설정 수정 */
         .image-box {
             position: relative;
             width: 100%;
-            height: 280px;
+            aspect-ratio: 1 / 2; /* 가로 1 : 세로 2 비율 강제 */
+            height: auto;
             background: #0d1214;
             overflow: hidden;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -136,18 +137,18 @@
         .sr-card .myeong-name-kr { color: #b19ffb; text-shadow: 0 0 6px rgba(177,159,251,0.2); }
         
         .myeong-name-kr { 
-            font-size: 1.3rem; 
+            font-size: calc(1.3rem + 4px); /* 텍스트 크기 증가 */
             font-weight: 700; 
             letter-spacing: 1px; 
             margin-bottom: 6px; 
         }
         
         .myeong-main-option { 
-            font-size: 0.9rem; 
+            font-size: calc(0.9rem + 4px); /* 텍스트 크기 증가 */
             color: #e3e8e9; 
             letter-spacing: 0.5px; 
             background: rgba(255, 255, 255, 0.04); 
-            padding: 4px 12px; 
+            padding: 6px 14px; 
             display: inline-flex;
             align-items: center;
             margin-top: 5px;
@@ -156,18 +157,18 @@
         .ssr-card .myeong-main-option { color: #ffd700; background: rgba(255, 215, 0, 0.03); }
         .sr-card .myeong-main-option { color: #b19ffb; background: rgba(177, 159, 251, 0.03); }
 
-        /* [핵심 시스템 변형] 우측 가로 확장 슬라이딩 반투명 레이어 */
+        /* 우측 가로 확장 슬라이딩 레이어 너비 확장수정 */
         .info-expand-layer {
             position: absolute;
             top: -1px;
             left: 100%; /* 부모 카드의 완전히 우측 끝 선에서 시작 */
-            width: 320px; /* 가로 확장 폭 고정 */
+            width: 400px; /* 커진 글씨 수용을 위해 기존 320px -> 400px 가로 확장 */
             height: calc(100% + 2px); /* 부모 테두리 매칭 정렬 */
             background: rgba(10, 15, 16, 0.96); 
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px;
+            padding: 24px;
             box-shadow: 15px 0 30px rgba(0, 0, 0, 0.5);
             
             /* 가로 제어를 위한 초기화 */
@@ -185,7 +186,7 @@
 
         /* 호버 시 우측(가로)으로 부드럽게 밀려나오며 정보 전개 */
         .myeongryun-card:hover .info-expand-layer {
-            max-width: 320px;
+            max-width: 400px; /* 기존 320px -> 400px 변경 수치 반영 */
             opacity: 1;
             pointer-events: auto;
         }
@@ -214,19 +215,20 @@
                 transition: max-height 0.4s ease, opacity 0.3s ease;
                 border: none !important;
                 border-top: 1px solid rgba(255,255,255,0.05) !important;
+                padding: 15px;
             }
             .myeongryun-card:hover .info-expand-layer {
-                max-height: 500px;
+                max-height: 800px; /* 글씨가 커졌으므로 최대 높이 제한 상향 */
                 opacity: 1;
             }
         }
 
         .info-title-label {
-            font-size: 0.8rem;
+            font-size: calc(0.8rem + 4px); /* 텍스트 크기 증가 */
             color: #8a999d;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             text-align: left;
             border-left: 2px solid rgba(255,255,255,0.3);
             padding-left: 6px;
@@ -235,9 +237,9 @@
         .sr-card .info-title-label { color: #b19ffb; border-left-color: #b19ffb; }
 
         .info-description {
-            font-size: 0.85rem;
+            font-size: calc(0.85rem + 4px); /* 텍스트 크기 증가 */
             color: #ffffff;
-            line-height: 1.6;
+            line-height: 1.7;
             text-align: left;
             word-break: keep-all;
         }
@@ -248,11 +250,12 @@
             background: transparent; 
             border: 1px solid rgba(255,255,255,0.15); 
             color: #ccd7d9; 
-            padding: 12px 30px; 
+            padding: 14px 35px; 
             cursor: pointer; 
             letter-spacing: 1px; 
             transition: all 0.25s; 
             transform: skewX(-10deg);
+            font-size: calc(0.9rem + 4px); /* 버튼 글자 크기도 증가 */
         }
         .back-btn span {
             display: inline-block;
