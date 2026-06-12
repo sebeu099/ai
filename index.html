@@ -523,19 +523,11 @@
                     heroSection.classList.add('no-transition', 'fade-out');
                     document.body.classList.add('page-opened', 'page-opened-direct');
                     
-                    targetVolume = 0.2;
-                    
-                    const playOnActive = () => {
-                        bgm.play().then(() => {
-                            if (!fadeAnimationId) smoothVolumeFade();
-                        }).catch(() => {});
-                        window.removeEventListener('click', playOnActive);
-                        window.removeEventListener('wheel', playOnActive);
-                        window.removeEventListener('touchmove', playOnActive);
-                    };
-                    window.addEventListener('click', playOnActive);
-                    window.addEventListener('wheel', playOnActive, { passive: true });
-                    window.addEventListener('touchmove', playOnActive, { passive: true });
+                    // 다른 탭/페이지에서 되돌아왔을 때는 음악을 꺼진 상태(볼륨 0)로 유지합니다.
+                    targetVolume = 0.0;
+                    bgm.volume = 0;
+                    volumeSlider.value = 0;
+                    bgm.pause(); // 음악을 일시정지 상태로 둡니다.
 
                     setTimeout(() => {
                         if (savedScrollY) {
@@ -635,16 +627,24 @@
             bgm.volume = targetVolume;
             bgm.muted = (targetVolume === 0);
             updateMuteIcon(bgm.muted);
+            if (targetVolume > 0 && bgm.paused) {
+                bgm.play().catch(() => {});
+            }
         }
 
         function toggleMute() {
             userInteractedWithVolume = true; 
             bgm.muted = !bgm.muted;
             updateMuteIcon(bgm.muted);
-            if (!bgm.muted && bgm.volume === 0) {
-                bgm.volume = 0.5;
-                targetVolume = 0.5;
-                volumeSlider.value = 0.5;
+            if (!bgm.muted) {
+                if (bgm.volume === 0) {
+                    bgm.volume = 0.5;
+                    targetVolume = 0.5;
+                    volumeSlider.value = 0.5;
+                }
+                if (bgm.paused) {
+                    bgm.play().catch(() => {});
+                }
             }
         }
 
@@ -748,5 +748,7 @@
             }
         }
     </script>
+</body>
+</html>
 </body>
 </html>
