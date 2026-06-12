@@ -479,46 +479,60 @@
         let fadeAnimationId = null;
         let pageOpened = false;
 
-        // [추가] 브라우저 백 히스토리(뒤로 가기)로 복귀했는지 확인하고 스크롤 위치 복원하는 생명주기 제어
+        // [핵심 변경 및 추가] 새로고침과 뒤로가기를 엄격히 구분하는 로직
         document.addEventListener("DOMContentLoaded", () => {
-            const savedState = sessionStorage.getItem('pageOpened');
-            const savedScrollY = sessionStorage.getItem('savedScrollPosition');
+            // 브라우저의 탐색 내비게이션 타입을 검사합니다.
+            const perfEntries = performance.getEntriesByType("navigation");
+            let isReload = false;
 
-            if (savedState === 'true') {
-                // 뒤로가기로 왔다면 초기 커버 연출을 건너뛰고 즉시 본문 개방
-                pageOpened = true;
-                heroSection.classList.add('no-transition', 'fade-out');
-                document.body.classList.add('page-opened', 'page-opened-direct');
-                
-                // 음악은 이미 열렸던 페이지이므로 처음부터 잔잔한 배경음(20%) 수준으로 재생 시작
-                targetVolume = 0.2;
-                
-                // 사용자가 화면을 건드리는 시점에 오디오 락을 완벽히 풀도록 이벤트 연동
-                const playOnActive = () => {
-                    bgm.play().then(() => {
-                        if (!fadeAnimationId) smoothVolumeFade();
-                    }).catch(() => {});
-                    window.removeEventListener('click', playOnActive);
-                    window.removeEventListener('wheel', playOnActive);
-                    window.removeEventListener('touchmove', playOnActive);
-                };
-                window.addEventListener('click', playOnActive);
-                window.addEventListener('wheel', playOnActive, { passive: true });
-                window.addEventListener('touchmove', playOnActive, { passive: true });
+            if (perfEntries.length > 0) {
+                // 'reload' 상태라면 유저가 F5나 새로고침 버튼을 직접 눌렀음을 의미합니다.
+                if (perfEntries[0].type === "reload") {
+                    isReload = true;
+                }
+            }
 
-                // 브라우저 렌더링 주기가 끝난 직후 이전 스크롤 위치로 순간 이동 처리
-                setTimeout(() => {
-                    if (savedScrollY) {
-                        window.scrollTo(0, parseInt(savedScrollY, 10));
-                    }
-                }, 50);
-            } else {
-                // 처음 진입했을 때는 정상적으로 볼륨 0인 상태 명시
+            if (isReload) {
+                // [새로고침 일 때] 세션 스토리지를 완전히 박살내서 무조건 첫 커버 스크린부터 시작하게 만듭니다.
+                sessionStorage.removeItem('pageOpened');
+                sessionStorage.removeItem('savedScrollPosition');
                 bgm.volume = 0;
+            } else {
+                // [새로고침이 아니라 하위 페이지에서 '뒤로가기'로 복귀했을 때만] 이전 위치와 본문 상태를 복구시킵니다.
+                const savedState = sessionStorage.getItem('pageOpened');
+                const savedScrollY = sessionStorage.getItem('savedScrollPosition');
+
+                if (savedState === 'true') {
+                    pageOpened = true;
+                    heroSection.classList.add('no-transition', 'fade-out');
+                    document.body.classList.add('page-opened', 'page-opened-direct');
+                    
+                    targetVolume = 0.2;
+                    
+                    const playOnActive = () => {
+                        bgm.play().then(() => {
+                            if (!fadeAnimationId) smoothVolumeFade();
+                        }).catch(() => {});
+                        window.removeEventListener('click', playOnActive);
+                        window.removeEventListener('wheel', playOnActive);
+                        window.removeEventListener('touchmove', playOnActive);
+                    };
+                    window.addEventListener('click', playOnActive);
+                    window.addEventListener('wheel', playOnActive, { passive: true });
+                    window.addEventListener('touchmove', playOnActive, { passive: true });
+
+                    setTimeout(() => {
+                        if (savedScrollY) {
+                            window.scrollTo(0, parseInt(savedScrollY, 10));
+                        }
+                    }, 50);
+                } else {
+                    bgm.volume = 0;
+                }
             }
         });
 
-        // 페이지를 떠나기 직전(하위 메뉴 클릭 등) 현재 스크롤 위치와 개방 상태를 캐싱 세션에 기록
+        // 본문 스크롤 위치 세션 저장 기록기
         window.addEventListener('scroll', function() {
             if (pageOpened) {
                 sessionStorage.setItem('savedScrollPosition', window.scrollY);
@@ -558,7 +572,7 @@
                 heroSection.classList.add('fade-out');
                 document.body.classList.add('page-opened');
                 
-                // 세션 스토리지에 페이지가 열렸음을 기록
+                // 세션 스토리지에 페이지 개방 성공 데이터 기록
                 sessionStorage.setItem('pageOpened', 'true');
                 
                 // 메인 화면 진입 후 3초(3000ms) 동안은 70% 볼륨 유지, 그 후 배경음 레벨(20%)로 다운
@@ -594,6 +608,11 @@
 
             fadeAnimationId = requestAnimationFrame(smoothVolumeFade);
         }
+
+        // 스크롤 시 볼륨 복귀 방지 리스너 공백 유지
+        window.addEventListener('scroll', function() {
+            if (!pageOpened) return; 
+        });
 
         function changeVolume(val) {
             userInteractedWithVolume = true; 
@@ -684,4 +703,5 @@
         }
     </script>
 </body>
+</html>
 </html>
