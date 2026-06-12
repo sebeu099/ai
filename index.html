@@ -167,7 +167,7 @@
         }
 
         /* ========================================================
-           게임 내 이벤트 영역 - 10초 자동 순환 및 PC 화살표 내장 슬라이더
+           게임 내 이벤트 영역 - 10초 자동 순환 및 스마트폰 터치 제어 슬라이더
            ======================================================== */
         .event-slider-container {
             width: 100%;
@@ -177,6 +177,8 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             background: #11181a;
+            /* 터치 스와이프 시 뷰포트 전체 화면이 흔들리거나 바운스되는 현상 제어 */
+            touch-action: pan-y; 
         }
 
         .event-slider-container::before {
@@ -431,7 +433,7 @@
     <div class="main-content">
         <h2 class="section-title">정보모음</h2>
         
-        <div class="event-slider-container">
+        <div class="event-slider-container" id="eventSliderContainer">
             <div class="slider-arrow arrow-left" onclick="prevSlide()"><div class="slider-arrow-inner"></div></div>
             <div class="slider-arrow arrow-right" onclick="nextSlide()"><div class="slider-arrow-inner"></div></div>
 
@@ -479,26 +481,22 @@
         let fadeAnimationId = null;
         let pageOpened = false;
 
-        // [핵심 변경 및 추가] 새로고침과 뒤로가기를 엄격히 구분하는 로직
+        // 새로고침과 뒤로가기를 엄격히 구분하는 로직
         document.addEventListener("DOMContentLoaded", () => {
-            // 브라우저의 탐색 내비게이션 타입을 검사합니다.
             const perfEntries = performance.getEntriesByType("navigation");
             let isReload = false;
 
             if (perfEntries.length > 0) {
-                // 'reload' 상태라면 유저가 F5나 새로고침 버튼을 직접 눌렀음을 의미합니다.
                 if (perfEntries[0].type === "reload") {
                     isReload = true;
                 }
             }
 
             if (isReload) {
-                // [새로고침 일 때] 세션 스토리지를 완전히 박살내서 무조건 첫 커버 스크린부터 시작하게 만듭니다.
                 sessionStorage.removeItem('pageOpened');
                 sessionStorage.removeItem('savedScrollPosition');
                 bgm.volume = 0;
             } else {
-                // [새로고침이 아니라 하위 페이지에서 '뒤로가기'로 복귀했을 때만] 이전 위치와 본문 상태를 복구시킵니다.
                 const savedState = sessionStorage.getItem('pageOpened');
                 const savedScrollY = sessionStorage.getItem('savedScrollPosition');
 
@@ -572,7 +570,6 @@
                 heroSection.classList.add('fade-out');
                 document.body.classList.add('page-opened');
                 
-                // 세션 스토리지에 페이지 개방 성공 데이터 기록
                 sessionStorage.setItem('pageOpened', 'true');
                 
                 // 메인 화면 진입 후 3초(3000ms) 동안은 70% 볼륨 유지, 그 후 배경음 레벨(20%)로 다운
@@ -690,6 +687,37 @@
             autoSlider = setInterval(nextSlide, slideInterval);
         }
 
+        // ========================================================
+        // [완벽 보완] 스마트폰 모바일 슬라이드 터치 스와이프 로직
+        // ========================================================
+        const sliderContainer = document.getElementById('eventSliderContainer');
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        // 터치 시작 시점 좌표 저장 (X축과 Y축 둘 다 기록)
+        sliderContainer.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        // 터치가 끝나는 시점에 거리 및 대각선 오차 판정 연산 가동
+        sliderContainer.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            // 수평 스와이프 거리가 수직(위아래 스크롤) 거리보다 크고, 최소 40px 이상 이동했을 때만 슬라이드 전환을 발동시킵니다.
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
+                if (deltaX > 0) {
+                    prevSlide(); // 오른쪽으로 밀었으므로 이전 슬라이드
+                } else {
+                    nextSlide(); // 왼쪽으로 밀었으므로 다음 슬라이드
+                }
+            }
+        }, { passive: true });
+
         function navigateToPage(menuType) {
             switch (menuType) {
                 case 'awakening': window.location.href = 'awakening.html'; break;
@@ -703,5 +731,4 @@
         }
     </script>
 </body>
-</html>
 </html>
